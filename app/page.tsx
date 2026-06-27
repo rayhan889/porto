@@ -1,5 +1,6 @@
 import { IntroSection } from "@/components/home/IntroSection";
 import { Experience } from "@/components/home/Experience";
+import { SelectedWork } from "@/components/home/SelectedWork";
 import { Footer } from "@/components/ui/Footer";
 import { Navigation } from "@/components/ui/Navigation";
 
@@ -10,7 +11,7 @@ export default function Home() {
         <Navigation />
         <IntroSection />
         <Experience />
-        <section>Work</section>
+        <SelectedWork />
         <section>Writing</section>
         <Footer />
       </main>
