@@ -21,7 +21,7 @@ export function Navigation() {
       <div className="max-w-6xl mx-2 px-4 py-4 h-auto flex flex-col gap-3 ">
         <Globe size={20} className="text-muted-foreground" />
         <span className="text-sm font-medium text-muted-foreground">Menu</span>
-        <ul className="flex gap-1.5 flex-col">
+        <ul className="flex gap-2 flex-col">
           {links.map((link) => (
             <li key={link.href} className="flex items-center gap-x-2">
               <CornerDownRight

@@ -53,7 +53,7 @@ const experiences: ExperienceItem[] = [
 
 export const Experience = () => {
   return (
-    <section className="w-full my-10">
+    <section className="w-full mt-10">
       <div className="flex flex-col space-y-8">
         <div>
           <h2 className="font-bold text-foreground">
