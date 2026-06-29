@@ -1,42 +1,58 @@
-'use client'
+"use client";
 
-import { useMemo, type ComponentType, type HTMLAttributes, type ReactNode } from 'react'
-import * as runtime from 'react/jsx-runtime'
-import { cn } from '@/lib/utils'
+import {
+  useMemo,
+  type ComponentType,
+  type HTMLAttributes,
+  type ReactNode,
+} from "react";
+import * as runtime from "react/jsx-runtime";
+import { cn } from "@/lib/utils";
 
 interface MDXContentProps {
-  code: string
-  className?: string
+  code: string;
+  className?: string;
 }
 
-type MDXComponent = ComponentType<{ components?: Record<string, ComponentType<any>> }>
+type MDXComponent = ComponentType<{
+  components?: Record<string, ComponentType<never>>;
+}>;
 
 function useMDXComponent(code: string): MDXComponent | null {
   return useMemo(() => {
-    if (!code) return null
+    if (!code) return null;
     try {
-      const fn = new Function('runtime', code)
-      const mdxModule = fn(runtime)
-      return mdxModule.default as MDXComponent
+      const fn = new Function("runtime", code);
+      const mdxModule = fn(runtime);
+      return mdxModule.default as MDXComponent;
     } catch {
-      return null
+      return null;
     }
-  }, [code])
+  }, [code]);
 }
 
-const overrides: Record<string, ComponentType<any>> = {
+const overrides: Record<string, ComponentType<never>> = {
   h1: ({ children, ...props }: HTMLAttributes<HTMLHeadingElement>) => (
-    <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl" {...props}>
+    <h1
+      className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl"
+      {...props}
+    >
       {children}
     </h1>
   ),
   h2: ({ children, ...props }: HTMLAttributes<HTMLHeadingElement>) => (
-    <h2 className="scroll-m-20 text-3xl font-semibold tracking-tight first:mt-0" {...props}>
+    <h2
+      className="scroll-m-20 text-3xl font-semibold tracking-tight first:mt-0"
+      {...props}
+    >
       {children}
     </h2>
   ),
   h3: ({ children, ...props }: HTMLAttributes<HTMLHeadingElement>) => (
-    <h3 className="scroll-m-20 text-2xl font-semibold tracking-tight" {...props}>
+    <h3
+      className="scroll-m-20 text-2xl font-semibold tracking-tight"
+      {...props}
+    >
       {children}
     </h3>
   ),
@@ -51,7 +67,10 @@ const overrides: Record<string, ComponentType<any>> = {
     </h5>
   ),
   h6: ({ children, ...props }: HTMLAttributes<HTMLHeadingElement>) => (
-    <h6 className="scroll-m-20 text-base font-semibold tracking-tight" {...props}>
+    <h6
+      className="scroll-m-20 text-base font-semibold tracking-tight"
+      {...props}
+    >
       {children}
     </h6>
   ),
@@ -60,10 +79,14 @@ const overrides: Record<string, ComponentType<any>> = {
       {children}
     </pre>
   ),
-  code: ({ children, className, ...props }: HTMLAttributes<HTMLElement> & { className?: string }) => (
+  code: ({
+    children,
+    className,
+    ...props
+  }: HTMLAttributes<HTMLElement> & { className?: string }) => (
     <code
       className={cn(
-        'relative rounded bg-neutral-100 px-[0.3rem] py-[0.2rem] font-mono text-sm',
+        "relative rounded bg-neutral-100 px-[0.3rem] py-[0.2rem] font-mono text-sm",
         className,
       )}
       {...props}
@@ -92,22 +115,30 @@ const overrides: Record<string, ComponentType<any>> = {
     </ol>
   ),
   blockquote: ({ children, ...props }: HTMLAttributes<HTMLQuoteElement>) => (
-    <blockquote className="mt-6 border-l-2 border-neutral-300 pl-6 italic" {...props}>
+    <blockquote
+      className="mt-6 border-l-2 border-neutral-300 pl-6 italic"
+      {...props}
+    >
       {children}
     </blockquote>
   ),
-}
+};
 
 export function MDXContent({ code, className }: MDXContentProps) {
-  const Component = useMDXComponent(code)
+  const Component = useMDXComponent(code);
 
   if (!Component) {
-    return null
+    return null;
   }
 
   return (
-    <div className={cn('prose prose-neutral dark:prose-invert max-w-none', className)}>
+    <div
+      className={cn(
+        "prose prose-neutral dark:prose-invert max-w-none",
+        className,
+      )}
+    >
       <Component components={overrides} />
     </div>
-  )
+  );
 }

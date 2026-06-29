@@ -27,7 +27,7 @@ export default function BioParagraph() {
           rel="noopener noreferrer"
           className="border-b border-transparent hover:border-current transition-colors duration-300"
         >
-          State University of Surabaya
+          State University of Surabaya (UNESA)
         </Link>{" "}
         and previously working as a backend engineer intern at{" "}
         <Link
