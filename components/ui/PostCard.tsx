@@ -1,30 +1,28 @@
-import Link from 'next/link'
-import { formatDate } from '@/lib/date'
+import Link from "next/link";
+import { formatDate } from "@/lib/date";
 
-interface PostCardProps {
-  post: {
-    slug: string
-    title: string
-    description: string
-    date: string
-  }
+export interface PostCard {
+  slug: string;
+  title: string;
+  description: string;
+  date: string;
 }
 
-export function PostCard({ post }: PostCardProps) {
+export function PostCard({ post }: { post: PostCard }) {
   return (
-    <Link 
-      href={`/blog/${post.slug}`}
-      className="block p-6 border border-gray-200 rounded-lg hover:border-gray-400 transition-colors"
+    <Link
+      href={`/writing/${post.slug}`}
+      className="group border border-muted rounded-lg p-4 flex flex-col space-y-2 transition-all duration-300 ease-out hover:-translate-y-0.5 hover:border-foreground/20 hover:shadow-[0_4px_20px_-12px_rgba(255,255,255,0.1)]"
     >
-      <time className="text-sm text-gray-500">
+      <time className="text-xs sm:text-sm text-muted-foreground whitespace-nowrap transition-colors duration-300 group-hover:text-foreground/70">
         {formatDate(post.date)}
       </time>
-      <h2 className="text-2xl font-semibold mt-2 mb-3">
+      <h3 className="text-sm sm:text-base font-bold text-foreground">
         {post.title}
-      </h2>
-      <p className="text-gray-600 line-clamp-2">
+      </h3>
+      <p className="text-sm sm:text-base text-foreground/90 leading-relaxed line-clamp-2">
         {post.description}
       </p>
     </Link>
-  )
+  );
 }

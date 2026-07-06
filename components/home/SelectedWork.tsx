@@ -57,7 +57,6 @@ export const SelectedWork = () => {
               className="group border border-muted rounded-lg p-4 flex flex-col space-y-3 transition-all duration-300 ease-out hover:-translate-y-0.5 hover:border-foreground/20 hover:shadow-[0_4px_20px_-12px_rgba(255,255,255,0.1)]"
             >
               <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-0">
-                {/* Project Title with Link and Animated Underline */}
                 <a
                   href={work.projectUrl || "#"}
                   target="_blank"

@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { ThemeProvider } from "@/components/theme-provider"
+import { ThemeProvider } from "@/components/theme-provider";
+import { TimeResolutionHeader } from "@/components/home/TimeResolutionHeader";
+import { Navigation } from "@/components/ui/Navigation";
+import { Footer } from "@/components/ui/Footer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,7 +39,14 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {children}
+          <div className="flex flex-col flex-1 items-center justify-center font-sans">
+            <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between px-6 md:px-16 sm:items-start py-32">
+              <TimeResolutionHeader />
+              <Navigation />
+              {children}
+              <Footer />
+            </main>
+          </div>
         </ThemeProvider>
       </body>
     </html>
