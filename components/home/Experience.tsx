@@ -1,57 +1,8 @@
-import React from "react";
-
-interface ExperienceItem {
-  title: string;
-  company: string;
-  companyUrl?: string;
-  location: string;
-  type: string;
-  startDate: string;
-  endDate: string;
-  description?: string;
-  highlights?: string[];
-}
-
-const experiences: ExperienceItem[] = [
-  {
-    title: "AI Engineer Cohort",
-    company: "Dicoding DBS 2026",
-    companyUrl: "https://www.dicoding.com",
-    location: "Bandung, ID",
-    type: "Remote, Internship",
-    startDate: "Feb 2026",
-    endDate: "Present",
-  },
-  {
-    title: "Backend Engineer",
-    company: "DOT Indonesia",
-    companyUrl: "https://dot.co.id",
-    location: "Malang, ID",
-    type: "Hybrid, Internship",
-    startDate: "Jun 2025",
-    endDate: "Nov 2025",
-  },
-  {
-    title: "Teaching and Practicum Assistant",
-    company: "UNESA",
-    companyUrl: "https://unesa.ac.id",
-    location: "Surabaya, ID",
-    type: "Onsite, Part-Time",
-    startDate: "Jul 2024",
-    endDate: "Jul 2025",
-  },
-  {
-    title: "Web Programmer",
-    company: "PT. Venturo Pro",
-    companyUrl: "#",
-    location: "Malang, ID",
-    type: "Onsite, Internship",
-    startDate: "Jun 2022",
-    endDate: "Nov 2022",
-  },
-];
+import { useContentStore } from "@/store/useContentStore";
 
 export const Experience = () => {
+  const experiences = useContentStore.getState().experiences;
+
   return (
     <section className="w-full mt-10">
       <div className="flex flex-col space-y-8">

@@ -1,33 +1,16 @@
 "use client";
 
+import { useTimeResolutionStore } from "@/store/useTimeResolution";
 import { useState, useEffect } from "react";
 
 export const TimeResolutionHeader = () => {
-  const [time, setTime] = useState<string>("");
-  const [resolution, setResolution] = useState<string>("");
+  const { time, resolution, updateTime, updateResolution } =
+    useTimeResolutionStore();
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsMounted(true);
-
-    const updateTime = () => {
-      const now = new Date();
-      const hours = now.getHours();
-      const minutes = now.getMinutes();
-      const seconds = now.getSeconds();
-      const ampm = hours >= 12 ? "PM" : "AM";
-      const displayHours = hours % 12 || 12;
-
-      const timeString = `${String(displayHours).padStart(2, " ")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")} ${ampm}`;
-      setTime(timeString);
-    };
-
-    const updateResolution = () => {
-      const width = window.innerWidth;
-      const height = window.innerHeight;
-      setResolution(`${width} x ${height}`);
-    };
 
     updateTime();
     updateResolution();
@@ -39,14 +22,14 @@ export const TimeResolutionHeader = () => {
       clearInterval(timeInterval);
       window.removeEventListener("resize", updateResolution);
     };
-  }, []);
+  }, [updateTime, updateResolution]);
 
   if (!isMounted) {
     return null;
   }
 
   return (
-    <div className="fixed top-0 left-0 w-full flex items-center justify-between text-sm p-6 z-50">
+    <div className="bg-linear-180 from-black via-black/70 to-transparent fixed top-0 left-0 w-full flex items-center justify-between text-sm p-6 z-50">
       <span className="font-mono">{time}</span>
       <span className="font-mono">{resolution}</span>
     </div>

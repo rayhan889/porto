@@ -1,42 +1,10 @@
 import { ArrowUpRight } from "lucide-react";
 import { Button } from "../ui/button";
-
-interface WorkItem {
-  title: string;
-  category: string;
-  description: string;
-  technologies: string[];
-  projectUrl?: string; // Optional field for project links
-}
-
-const works: WorkItem[] = [
-  {
-    title: "Simakerja",
-    category: "Web App",
-    projectUrl: "https://github.com/rynrama_/simakerja", // Added mock link
-    description:
-      "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since 1966,",
-    technologies: ["Java", "OCR", "Spring Boot", "PostgreSQL"],
-  },
-  {
-    title: "XCrawler",
-    category: "Node Package",
-    projectUrl: "#",
-    description:
-      "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since 1966,",
-    technologies: ["Java", "OCR", "Spring Boot", "PostgreSQL"],
-  },
-  {
-    title: "Tale of Samurai",
-    category: "Game",
-    projectUrl: "#",
-    description:
-      "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since 1966,",
-    technologies: ["Pygame", "Python"],
-  },
-];
+import { useContentStore } from "@/store/useContentStore";
 
 export const SelectedWork = () => {
+  const works = useContentStore.getState().works;
+
   return (
     <section className="w-full mt-10">
       <div className="flex flex-col space-y-6">
@@ -54,7 +22,7 @@ export const SelectedWork = () => {
           {works.map((work, index) => (
             <div
               key={index}
-              className="group border border-muted rounded-lg p-4 flex flex-col space-y-3 transition-all duration-300 ease-out hover:-translate-y-0.5 hover:border-foreground/20 hover:shadow-[0_4px_20px_-12px_rgba(255,255,255,0.1)]"
+              className="group border bg-background/60 backdrop-blur-sm border-muted rounded-lg p-4 flex flex-col space-y-3 transition-all duration-300 ease-out hover:-translate-y-0.5 hover:border-foreground/20 hover:shadow-[0_4px_20px_-12px_rgba(255,255,255,0.1)]"
             >
               <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-0">
                 <a
