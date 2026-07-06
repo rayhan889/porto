@@ -46,7 +46,7 @@ export const TimeResolutionHeader = () => {
   }
 
   return (
-    <div className="absolute top-0 left-0 w-full flex items-center justify-between text-sm p-6">
+    <div className="fixed top-0 left-0 w-full flex items-center justify-between text-sm p-6 z-50">
       <span className="font-mono">{time}</span>
       <span className="font-mono">{resolution}</span>
     </div>

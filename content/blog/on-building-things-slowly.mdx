@@ -1,0 +1,94 @@
+---
+title: On Building Things Slowly
+description: Why moving deliberately and understanding your tools deeply leads to better software than chasing speed.
+date: 2026-06-20
+published: true
+tags:
+  - craft
+  - software
+---
+
+There is a certain pressure in software development to move fast — to ship, to iterate, to always be building. But I have come to believe that deliberate slowness is often the more productive choice.
+
+## The Cost of Speed
+
+When we rush, we accumulate more than just technical debt. We accumulate _conceptual_ debt — an incomplete understanding of the systems we build. A quick fix replaces a root cause with a workaround. A copy-pasted snippet obscures the intention behind it. Over time, the codebase becomes a collection of things nobody fully understands.
+
+```ts {2}
+// The fast version
+const result = data?.items?.[0]?.value ?? "default";
+
+// The slow version — with a moment to ask: why is this optional?
+```
+
+```md
+# Heading 1
+
+### Heading 3
+
+- Lists
+- Like
+- This
+
+**Bold**, _Italic_, and `Inline code`
+
+> Blockquotes work too
+```
+
+```go {1,3}
+package main
+
+import "fmt"
+
+func intSeq() func() int {
+    i := 0
+    return func() int {
+        i++
+        return i
+    }
+}
+
+func main() {
+
+    nextInt := intSeq()
+
+    fmt.Println(nextInt())
+    fmt.Println(nextInt())
+    fmt.Println(nextInt())
+
+    newInts := intSeq()
+    fmt.Println(newInts())
+}
+```
+
+```js /age/#v /name/#v /setAge/#s /setName/#s /50/#i /"Taylor"/#i
+const [age, setAge] = useState(50);
+const [name, setName] = useState("Taylor");
+```
+
+This is an array `[1, 2, 3]{:js}` of numbers 1 through 3.
+
+The fast version ships. The slow version asks a question that might reveal the data model is wrong.
+
+## Reading Before Writing
+
+One of the most underrated skills in software is the ability to read unfamiliar code before writing new code. It takes patience. It feels unproductive. But it surfaces assumptions, reveals patterns, and prevents you from solving a problem that's already been solved — or adding a layer where one doesn't belong.
+
+> The code you didn't write is the code you don't have to maintain.
+
+## What Slowness Actually Looks Like
+
+Slowness isn't about writing fewer lines per hour. It's about:
+
+- Reading the documentation before reaching for the solution
+- Understanding the existing abstractions before adding new ones
+- Sitting with a failing test instead of immediately patching it
+- Asking _why_ before asking _how_
+
+These habits compound. A codebase built by people who slow down to understand tends to stay understandable — which is, ultimately, what makes it fast to work in.
+
+## A Personal Note
+
+I have caught myself rushing more often than I'd like to admit. The instinct to look productive is real. But some of my best work has come from doing nothing — from stepping back, reading, thinking, and only then writing.
+
+Build things slowly. You might surprise yourself.

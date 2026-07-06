@@ -1,13 +1,27 @@
 "use client";
 
 import {
-  useMemo,
   type ComponentType,
   type HTMLAttributes,
   type ReactNode,
+  isValidElement,
+  useState,
+  useEffect,
+  useRef,
 } from "react";
 import * as runtime from "react/jsx-runtime";
+import { Check, Copy } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { slugify } from "@/lib/slug";
+
+function getTextContent(node: ReactNode): string {
+  if (typeof node === "string" || typeof node === "number") return String(node);
+  if (Array.isArray(node)) return node.map(getTextContent).join("");
+  if (isValidElement(node)) {
+    return getTextContent((node.props as { children?: ReactNode }).children);
+  }
+  return "";
+}
 
 interface MDXContentProps {
   code: string;
@@ -15,23 +29,67 @@ interface MDXContentProps {
 }
 
 type MDXComponent = ComponentType<{
-  components?: Record<string, ComponentType<never>>;
+  components?: Record<string, ComponentType<HTMLAttributes<HTMLElement>>>;
 }>;
 
 function useMDXComponent(code: string): MDXComponent | null {
-  return useMemo(() => {
-    if (!code) return null;
+  const [Component, setComponent] = useState<MDXComponent | null>(null);
+
+  useEffect(() => {
+    if (!code) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setComponent(null);
+      return;
+    }
     try {
       const fn = new Function("runtime", code);
       const mdxModule = fn(runtime);
-      return mdxModule.default as MDXComponent;
+      setComponent(() => mdxModule.default as MDXComponent);
     } catch {
-      return null;
+      setComponent(null);
     }
   }, [code]);
+
+  return Component;
 }
 
-const overrides: Record<string, ComponentType<never>> = {
+function Pre({
+  children,
+  className,
+  ...props
+}: HTMLAttributes<HTMLPreElement>) {
+  const ref = useRef<HTMLPreElement>(null);
+  const [copied, setCopied] = useState(false);
+
+  const copy = async () => {
+    const text = ref.current?.textContent ?? "";
+    await navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div className="group relative">
+      <button
+        type="button"
+        onClick={copy}
+        aria-label={copied ? "Copied" : "Copy code"}
+        className="absolute right-2 top-2 rounded-md border bg-background/70 p-1.5 opacity-0 backdrop-blur transition group-hover:opacity-100 focus-visible:opacity-100"
+      >
+        {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
+      </button>
+      <pre
+        ref={ref}
+        className={cn("overflow-x-auto rounded-lg border text-sm", className)}
+        {...props}
+      >
+        {children}
+      </pre>
+    </div>
+  );
+}
+
+const overrides: Record<string, ComponentType<HTMLAttributes<HTMLElement>>> = {
   h1: ({ children, ...props }: HTMLAttributes<HTMLHeadingElement>) => (
     <h1
       className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl"
@@ -40,14 +98,18 @@ const overrides: Record<string, ComponentType<never>> = {
       {children}
     </h1>
   ),
-  h2: ({ children, ...props }: HTMLAttributes<HTMLHeadingElement>) => (
-    <h2
-      className="scroll-m-20 text-3xl font-semibold tracking-tight first:mt-0"
-      {...props}
-    >
-      {children}
-    </h2>
-  ),
+  h2: ({ children, ...props }: HTMLAttributes<HTMLHeadingElement>) => {
+    const id = slugify(getTextContent(children));
+    return (
+      <h2
+        id={id}
+        className="scroll-m-20 text-3xl font-semibold tracking-tight first:mt-0"
+        {...props}
+      >
+        {children}
+      </h2>
+    );
+  },
   h3: ({ children, ...props }: HTMLAttributes<HTMLHeadingElement>) => (
     <h3
       className="scroll-m-20 text-2xl font-semibold tracking-tight"
@@ -74,26 +136,31 @@ const overrides: Record<string, ComponentType<never>> = {
       {children}
     </h6>
   ),
-  pre: ({ children, ...props }: HTMLAttributes<HTMLPreElement>) => (
-    <pre className="overflow-x-auto rounded-lg border p-4 text-sm" {...props}>
-      {children}
-    </pre>
-  ),
+  pre: (props: HTMLAttributes<HTMLPreElement>) => <Pre {...props} />,
   code: ({
     children,
     className,
     ...props
-  }: HTMLAttributes<HTMLElement> & { className?: string }) => (
-    <code
-      className={cn(
-        "relative rounded bg-neutral-100 px-[0.3rem] py-[0.2rem] font-mono text-sm",
-        className,
-      )}
-      {...props}
-    >
-      {children}
-    </code>
-  ),
+  }: HTMLAttributes<HTMLElement> & { className?: string }) => {
+    if ("data-language" in props) {
+      return (
+        <code className={className} {...props}>
+          {children}
+        </code>
+      );
+    }
+    return (
+      <code
+        className={cn(
+          "relative rounded bg-neutral-100 px-[0.3rem] py-[0.2rem] font-mono text-sm dark:bg-neutral-800",
+          className,
+        )}
+        {...props}
+      >
+        {children}
+      </code>
+    );
+  },
   a: ({ children, ...props }: HTMLAttributes<HTMLAnchorElement>) => (
     <a className="font-medium underline underline-offset-4" {...props}>
       {children}
@@ -138,6 +205,7 @@ export function MDXContent({ code, className }: MDXContentProps) {
         className,
       )}
     >
+      {/* eslint-disable-next-line react-hooks/static-components */}
       <Component components={overrides} />
     </div>
   );

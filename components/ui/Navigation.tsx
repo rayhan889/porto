@@ -17,7 +17,7 @@ export function Navigation() {
   ];
 
   return (
-    <nav className="hidden xl:block xl:absolute top-24 left-24 z-50 ">
+    <nav className="hidden xl:block xl:fixed top-24 left-24 z-50 ">
       <div className="max-w-6xl mx-2 px-4 py-4 h-auto flex flex-col gap-3 ">
         <Globe size={20} className="text-muted-foreground" />
         <span className="text-sm font-medium text-muted-foreground">Menu</span>
