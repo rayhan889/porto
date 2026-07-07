@@ -1,6 +1,6 @@
 "use client";
 
-import { useTimeResolutionStore } from "@/store/useTimeResolution";
+import { useTimeResolutionStore } from "@/store/useTimeResolutionStore";
 import { useState, useEffect } from "react";
 
 export const TimeResolutionHeader = () => {

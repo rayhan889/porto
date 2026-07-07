@@ -16,4 +16,5 @@ export interface WorkItem {
   description: string;
   technologies: string[];
   projectUrl?: string;
+  blank: boolean;
 }
