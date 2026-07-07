@@ -27,7 +27,7 @@ export const SelectedWork = () => {
               <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-0">
                 <a
                   href={work.projectUrl || "#"}
-                  target="_blank"
+                  target={work.blank ? "_blank" : "_parent"}
                   rel="noopener noreferrer"
                   className="relative inline-block w-fit group/title"
                 >

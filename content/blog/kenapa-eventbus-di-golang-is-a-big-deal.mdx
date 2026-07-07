@@ -1,0 +1,461 @@
+---
+title: Kenapa Eventbus di Golang is A Big Deal ?
+description: Implementasi eventbus pada aplikasi backend berbasis Go dengan konsep pub-sub & channel.
+date: 2025-10-10
+published: true
+tags:
+  - architecture
+  - software
+  - design
+  - go
+---
+
+![Hero section img](/writings/eventbus_go_1.png "Ted leaved by his friends")
+
+## Chapter 1: The Background
+
+Ini terjadi kepada saya beberapa bulan lalu…
+
+Tepatnya pada bulan Juni 2025 lalu, saya baru saja mendapatkan posisi magang sebagai backend engineer di salah satu startup di Jawa Timur. Tidak lama setelah proses onboarding, saya di-assign kedalam project backend berbasis Go dengan arsitektur <a href="https://www.dicoding.com/blog/mengenal-arsitektur-monolith-kelebihan-serta-batasannya/"
+target="_blank"
+rel="noopener noreferrer" className="cursor-pointer underline">monolith</a>.
+
+Tentunya ini hal yang wajar bukan? Hingga saat ini arsitektur monolith masih sangat relevan digunakan dan kenapa tidak? monolith memudahkan code management, cognitive overhead, proses debugging dan lain-lain(saya bisa jabarkan lebih banyak kelebihan monolith).
+
+## Chapter 2: The Issue
+
+Pada fase awal pengembangan, monolithic jelas punya banyak kelebihan. Namun kompleksitas sistem akan turut meningkat seiring waktu. Seperti:
+
+- Dependencies hell atau ketergantungan dependencies tidak akan terbendung.
+- Reliability, artinya apabila salah satu module mengalami eror, maka hal ini akan memberikan efek kepada seluruh sistem.
+
+Dengan adanya isu-isu diatas, maka dibutuhkan adanya suatu mekanisme yang bisa membantu module berkomunikasi tanpa saling menggantungkan satu sama lain(_tight coupling_).
+
+## Chapter 3: The Solution
+
+Salah satu pattern yang bisa dipakai untuk mengurangi _tight coupling_ adalah event-driven communication dengan publish-subscribe. Dengan ini, tiap komponen ataupun service dalam suatu sistem dapat mem-publish/broadcast event sehingga komponen atau service yang lain dapat melakukan subscribe terhadap event tersebut dan meresponnya berdasarkan konten/payload dari masing-masing event.
+
+Pastinya banyak readers yang sudah cukup familiar dengan konsep ini, karena hal ini cukup serupa dengan message queues pada RabbitMQ dan tentunya fitur Pub/Sub pada Redis.
+
+Konsep publish-subscribe ini dapat di achieve dengan fitur concurrency dan channel yang terdapat dalam Go. Sehingga, pada artikel kali ini, saya akan memberikan contoh implementasi publish-subscribe pada aplikasi backend terkait toko online sederhana.
+
+**Hold Up..**
+
+Sebelum masuk ke bagian implementasi, mungkin ada pertanyaan yang mencuat seperti.
+
+> Kenapa tidak langsung saja menggunakan EDA tools seperti Apache Kafka ataupun RabbitMQ?
+
+Karena konsep EDA(Event-Driven Architecture) pada Apache Kafka maupun RabbitMQ diperuntukkan untuk aplikasi dengan event streams yang tinggi, distributed system(seperti microservices) hingga data persistant. Hal ini tidak cocok untuk skala aplikasi low-medium, yang mana merupakan skala aplikasi yang akan saya demokan untuk artikel ini.
+
+Disamping itu, ini terkait dengan simplicity, terutama bagi readers yang belum familiar dengan konsep EDA pada microservices dan hanya sekadar ingin mencicipi performa EDA pada aplikasi monolith dengan penggunaan channels & goroutines sederhana.
+
+## Chapter 4: The Implementation
+
+Pada pembahasan terkait implementasi kali ini, terlebih dahulu saya akan menjabarkan terkait 3 fungsionalitas utama pada eventbus, yakni:
+
+- **Publish** → Fungsi yang melakukan broadcast/publishing event ke seluruh sistem.
+- **Subscribe** → Fungsi yang memungkinkan service atau komponen untuk melakukan subscribe kepada event spesifik yang diperlukan.
+- **Unsubscribe** → Kebalikan dari fungsi ke-2, ini digunakan untuk melakukan unsubscribe event spesifik yang dirasa telah tidak diperlukan lagi.
+
+**Eventbus Structure & Generics**
+
+Untuk kebutuhan scaffolding eventbus, dibutuhkan sebuah struktur dan beberapa fungsi generics yang nantinya akan mempermudah workflow.
+
+```go
+type Event struct {
+ Payload any
+}
+```
+
+`Event` adalah sebuah definisi dari struktur event yang didalamnya terdapat `Payload` sebagai representasi kontekstual dari data sebuah event dengan tipe `any` .
+
+```go
+type (
+ EventChan chan Event
+)
+```
+
+`EventChan` adalah alias yang digunakan untuk mengirimkan `Event` dalam bentuk channel.
+
+```go
+type EventBus struct {
+ mu          sync.RWMutex
+ subscribers map[string][]EventChan
+}
+```
+
+`EventBus` merupakan definisi struktur utama dari eventbus yang didalamnya terdapat 2 buah properti, yaitu:
+
+- `mu sync.RWMutex` membuat proses baca dapat tersinkronasi. Sehingga tidak terjadi tabrakan antar proses baca dan tulis pada `subscribers` .
+- `subscribers` adalah sebuah slice yang berisi `map` . Dimana `string` adalah representasi topik/nama event, dan `[]EventChan` adalah slice dengan tipe `EventChan` . `subscribers` digunakan untuk menyimpan seluruh subscribers dengan masing-masing topik event yang berbeda dan tiap subscribers menerima event dari `EventChan` .
+
+Lalu, dibawah ini adalah beberapa fungsi _generics_ yang implementasinya mengikuti konsep dari 3 fungsionalitas utama eventbus diatas.
+
+```go
+func (eb *EventBus) Publish(eventName string, event Event) {
+ eb.mu.RLock()
+ defer eb.mu.RUnlock()
+
+ subscribers := append([]EventChan{}, eb.subscribers[eventName]...)
+ go func() {
+  for _, subscriber := range subscribers {
+   subscriber <- event
+  }
+ }()
+}
+```
+
+`Publish()` menerima 2 buah parameter, yaitu:
+
+- `eventName` sesuai namanya, parameter ini akan menjadi subyek dari sebuah event tertentu.
+- `event` adalah sebuah event yang memiliki struktur `Event`.
+
+`RLock()` adalah fungsi yang berasal dari `sync.RWMutex` yang digunakan agar beberapa goroutines dapat memanggil `Publish()` secara bersamaan tanpa menganggu value pada `subscribers`. Dibawahnya terdapat `RUnlock()` yang merupakan fungsi yang wajib dipanggil setelah `RLock()`, karena akan merilis lock sesaat setelah `Publish()` berakhir(baik itu error ataupun tidak).
+
+Lalu, `subscribers` adalah hasil copy dari `eb.subscribers` original yang berisi slice dari `EventChan` untuk `eventName` sebagai topiknya.
+
+> _Untuk apa proses copy slice dilakukan?_
+
+Hal ini dilakukan untuk menghindari terjadinya _race conditions_, karena apabila copy tidak dilakukan, maka value dari `subscribers` akan berisi reference pada original slice.
+
+Terakhir, `go func(){...}()` bertujuan untuk membuat beberapa goroutines sesuai dengan jumlah `subscribers`, agar setiap kali `Publish()` dipanggil, proses tidak terkena _block_ akibat tunggu-menunggu. Dengan kata lain, setiap pemanggilan `Publish()`, response dapat segera diberikan sedangkan `subscribers` yang lain dapat tetap berjalan di background.
+
+```go
+func (eb *EventBus) Subscribe(eventName string) EventChan {
+ eb.mu.Lock()
+ defer eb.mu.Unlock()
+
+ ch := make(EventChan)
+ eb.subscribers[eventName] = append(eb.subscribers[eventName], ch)
+ return ch
+}
+```
+
+`Subscribe()` menerima `eventName` sebagai satu-satunya parameter yang merupakan subyek dari event yang ditargetkan.
+
+Didalamnya, `Lock()` yang berasal dari `sync.RWMutex` berfungsi untuk memastikan operasi _write_/tulis pada `subscribers` tereksekusi secara bergantian sehingga tidak menimbulkan adanya _overlapping_ pada goroutines. Sama halnya seperti `RUnlock()` yang berlaku untuk `RLock()`, `Unlock()` adalah fungsi yang wajib dipanggil namun berlaku untuk `Lock()`.
+
+Selanjutnya, `ch` merupakan slice dari `EventChan` yang di assign kedalam `subscribers` dengan `eventName` yang relevan.
+
+```go
+func (eb *EventBus) Unsubscribe(eventName string, ch EventChan) {
+ eb.mu.Lock()
+ defer eb.mu.Unlock()
+
+ if subscribers, ok := eb.subscribers[eventName]; ok {
+  for i, subscriber := range subscribers {
+   if ch == subscriber {
+    eb.subscribers[eventName] = append(subscribers[:i], subscribers[i+1:]...)
+    close(ch)
+
+    for range ch {
+    }
+    return
+   }
+  }
+ }
+}
+```
+
+`Unsubscribe()` menerima 2 buah parameter, yaitu:
+
+- `eventName` yakni subyek event yang menjadi target untuk dilakukannya _unsubscribing_.
+- `ch` adalah event dalam bentuk channel yang akan dihapus.
+
+Penggunaan kembali `Lock()` disini dikarenakan `Unsubscribe()` merupakan operasi _write_/tulis sama seperti `Subscribe()` sebelumnya.
+
+Lalu, proses penghapusan event terjadi setelah _conditional check_ lolos secara keseluruhan, maka value `subscribers` akan dimodifikasi dengan mengikutsertakan seluruh event kecuali event `i` , dan pemanggilan `close()` dilakukan untuk mengakhiri lifecycle event.
+
+Pada bagian akhir fungsi, perulangan kosong `for range ch{}` dilakukan untuk memastikan tidak adanya event yang tersisa pada channel buffer.
+
+### **Eventbus in Action**
+
+📢 _Disclaimer_: Project yang saya demokan pada artikel kali ini menggunakan [layered architecture](https://dev.to/yasmine_ddec94f4d4/understanding-the-layered-architecture-pattern-a-comprehensive-guide-1e2j), sehingga apabila terdapat kebingungan dengan navigasi file, silahkan check repository project ini [disini](https://github.com/rayhan889/ecovera-backend).
+
+_Flow_ dari implementasi eventbus ini dimulai dari _trigger_ `Subscribe()` terlebih dahulu, dan disusul oleh `Publish()` .
+
+> _Mengapa demikian? Bukankah secara logika, event perlu di publish terlebih dahulu untuk mendapatkan audience/subscribers?_
+
+Seperti ini analoginya,
+
+- Publish adalah sebuah stasiun radio yang melakukan _broadcast_ sinyal.
+- Subscribe adalah masyarakat yang menyalakan radio dan melakukan tuning channel radio.
+
+Apabila tidak ada masyarakat yang menyalakan radio, _broadcast_ sinyal akan menjadi sia-sia.
+
+`app/subscribers/subscriber_manager.go`
+
+```go
+package subscribers
+
+import (
+ "github.com/rayhan889/ecovera-backend/app/services"
+ "github.com/rayhan889/ecovera-backend/pkg/eventbus"
+)
+
+// list services yang dibutuhkan oleh subscribers
+type SubscriberDependencies struct {
+ CartService          *services.CartService
+ PaymentDetailService *services.PaymentDetailService
+ OrderService         *services.OrderService
+ UserService          *services.UserService
+ MailService          *services.MailService
+}
+
+// interface untuk menentukan basic method yang akan diadopsi oleh
+// tiap subscribers
+type EventSubscriber interface {
+ Subscribe(eventBus *eventbus.EventBus)
+}
+
+// struktur utama subscriber manager
+type SubscriberManager struct {
+ dependencies *SubscriberDependencies
+ subscribers  []EventSubscriber
+}
+
+// constructor untuk SubscriberManager
+func NewSubscriberManger(
+  deps *SubscriberDependencies,
+  eventBus *eventbus.EventBus,
+) *SubscriberManager {
+ manager := &SubscriberManager{
+  dependencies: deps,
+  // agar simpel, constructor dari tiap subscriber untuk event spesifik
+  // akan langsung di assign
+  subscribers: []EventSubscriber{
+   NewOrderSubscriber(deps),
+  },
+ }
+
+ // assign seluruh subscribers dengan eventBus
+ for _, s := range manager.subscribers {
+  s.Subscribe(eventBus)
+ }
+
+ return manager
+}
+
+// fungsi helper untuk mendapatkan list event yang terdaftar
+func (sm *SubscriberManager) GetRegisteredEventsName() []string {
+ eventsName := make([]string, 0)
+ for _, subs := range sm.subscribers {
+  eventsName = append(eventsName, subs.GetEventName())
+ }
+
+ return eventsName
+}
+
+// fungsi helper untuk mendapatkan total subscribers
+func (sm *SubscriberManager) GetSubscriberCount() int {
+ return len(sm.subscribers)
+}
+```
+
+`app/subscribers/order_subscriber.go`
+
+```go
+package subscribers
+
+import (
+ ...
+)
+
+// struktur OrderSubscriber yang menampung seluruh dependencies
+// dari SubscriberManager
+type OrderSubscriber struct {
+ deps *SubscriberDependencies
+}
+
+// constructor OrderSubscriber
+func NewOrderSubscriber(deps *SubscriberDependencies) *OrderSubscriber {
+ return &OrderSubscriber{
+  deps: deps,
+ }
+}
+
+// method turunan dari SubscriberManager, berfungsi untuk mengeksekusi
+// tasks secara berurutan yang dibungkus dengan goroutines
+func (os *OrderSubscriber) Subscribe(eventBus *eventbus.EventBus) {
+ go func() {
+  event := eventBus.Subscribe("order.created")
+  for e := range event {
+   os.handleRemoveCartItem(e)
+   os.handleGeneratePaymentDetails(e)
+   os.handleSendEmail(e)
+  }
+ }()
+}
+
+func (os *OrderSubscriber) handleRemoveCartItem(e eventbus.Event) {
+ ...
+}
+
+func (os *OrderSubscriber) handleGeneratePaymentDetails(e eventbus.Event) {
+ ...
+}
+
+func (os *OrderSubscriber) handleSendEmail(e eventbus.Event) {
+ ...
+}
+```
+
+_Tasks_ yang terdaftar berdasarkan event `order.created` akan terseksekusi secara berurutan. _Readers_ dapat bebas melakukan modifikasi perihal task apa yang akan ter-_trigger_ berdasarkan event tertentu.
+
+Selanjutnya, sonstructor `NewSubscriberManager()` akan dipanggil di `app.go` sebelum endpoints didaftarkan pada aplikasi. Ini bertujuan agar ketika salah satu endpoint dijalankan, seluruh `subscribers` hanya perlu menunggu event yang sesuai dengan `eventName` masing-masing.
+
+`app/app.go`
+
+```go
+func (app *App) registerRoutes(routerGroup *gin.RouterGroup) {
+ v1 := routerGroup.Group("/v1")
+
+ // Services
+ ...
+
+ // Controllers
+ ...
+
+ // Event Bus
+ eventBusServices := &subscribers.SubscriberDependencies{
+  CartService:          cartService,
+  PaymentDetailService: paymentDetailService,
+  MailService:          mailService,
+  UserService:          userService,
+  OrderService:         orderService,
+ }
+ // assign dependencies dan eventbus generic kedalam subscriber manager constructor
+ subscriberManager := subscribers.NewSubscriberManger(eventBusServices, app.EventBus)
+ fmt.Println("Registered subscribers :", subscriberManager.GetRegisteredEventsName())
+
+ // Routes
+ ...
+ v1.POST("/cart/items", middlewares.Authenticate(authService), middlewares.ValidateRequestJSON[requests.AddItemsToCartRequest](), cartController.AddItemsToCart)
+ v1.POST("/orders", middlewares.Authenticate(authService), middlewares.ValidateRequestJSON[requests.OrderRequest](), orderController.CreateOrder)
+}
+```
+
+`app/services/order_service.go`
+
+```go
+package services
+
+import (
+ ...
+)
+
+type OrderService struct {
+ orderRepository *repositories.OrderDetailRepository
+ cartRepository  *repositories.CartRepository
+ eventBus        *eventbus.EventBus
+}
+
+func NewOrderService(orderRepository *repositories.OrderDetailRepository, cartRepository *repositories.CartRepository, eventBus *eventbus.EventBus) *OrderService {
+ ...
+}
+
+func (service *OrderService) GetOrderDetailByID(ctx context.Context, id uuid.UUID) (*models.OrderDetailModel, error) {
+ return service.orderRepository.FindOrderDetailByID(ctx, id)
+}
+
+func (service *OrderService) CreateOrder(ctx context.Context, request *requests.OrderRequest, userId uuid.UUID) {
+ var orderItemIds []uuid.UUID
+ ...
+
+ // CreateOrderDetailsAndBulkCreateOrderItems() melakukan eksekusi creation secara
+ // sekaligus untuk beberapa records kedalam dua tabel yang berbeda.
+ orderCreatedEventRes, err := service.orderRepository.CreateOrderDetailsAndBulkCreateOrderItems(
+  ctx,
+  items,
+  request.PaymentMethod,
+  userId,
+ )
+ if err != nil {
+  panic(*exceptions.ServerErrorException(err))
+ }
+
+ log.Println("Order created successfully")
+ log.Println("Publishing order.created event to EventBus")
+ // Apabila tidak ada error selama proses
+ // CreateOrderDetailsAndBulkCreateOrderItems(), maka event akan mulai
+ // di publsih menggunakan Publish() dari eventbus generic
+ service.eventBus.Publish(constants.EventOrderCreated, eventbus.Event{
+  Payload: orderCreatedEventRes,
+ })
+
+}
+
+...
+```
+
+Note: Struktur dari `Payload` dapat disesuaikan dengan data/skema apa yang akan diekspektasikan oleh `subscribers` . Dalam hal ini, skema `Payload` yang digunakan untuk event `order.created` adalah seperti dibawah ini.
+
+```go
+type (
+ OrderCreatedEventResponse struct {
+  UserID     uuid.UUID               `json:"user_id"`
+  OrderID    uuid.UUID               `json:"order_id"`
+  OrderItems []models.OrderItemModel `json:"order_items"`
+  CartItems  []models.CartItemModel  `json:"cart_items"`
+  Provider   string                  `json:"provider"`
+ }
+)
+```
+
+### _Why is this better?_
+
+Pertama, dengan _flow_ seperti ini, seluruh `subscribers` yang sebelumnya telah terdaftar diawal akan menunggu event yang dipublish tanpa mengetahui sumbernya(dalam hal ini order service), begitupun sebaliknya.
+
+Kedua, hal ini membuat baik order service(sebagai _publisher_) dan `subscribers` menjadi terpisah dan dapat tereksekusi secara independen.
+
+Ketiga, tidak adanya P2P(_point-to-point_) integrations, yang mana memudahkan developer apabila kedepannya dirasa perlu menambahkan subscriber baru.
+
+Terakhir, karena `subscribers` telah terinisialisasi sedari awal, `subscribers` dapat segera merespon event yang dipublish secara cepat.
+
+## Chapter 5: The Comparison
+
+Saya membuat perbandingan singkat terkait kecepatan _response time_ pada kedua metode, yakni DI(_Dependency Injection_) dengan konsep publish-subscribe.
+
+Berikut adalah kecepatan _request endpoint_ menggunakan DI.
+
+![Test 1](/writings/eventbus_go_2.png)
+
+Dapat dilihat bahwasanya _response time_ yang dihasilkan tidaklah terlalu buruk, yakni di angka **2.27s**. Namun, apabila skala sistem semakin membesar, setiap milisecond pada response time yang dihasilkan response time akan amat berarti. Apalagi jika sebuah sistem memiliki _event stream_ yang besar pada saat bersamaan.
+
+Dengan menggunakan konsep publish-subscribe, kecepatan response time dapat ditekan lebih jauh seperti berikut.
+
+![Test 2](/writings/eventbus_go_3.png)
+
+Didapatkan perbedaan response time yang cukup signifikan pada angka 50ms. Sehingga, menggunakan perhitungan matematika sederhana, besaran persentase dari kecepatan response time yang dihasilkan oleh publish-subscribe dibanding DI adalah,
+
+$$
+res = \frac{2.27s}{50ms} * 100
+$$
+
+$$
+res = \frac{2270ms}{50ms} * 100
+$$
+
+$$
+res = 4540
+$$
+
+$$
+res = 45.4\%
+$$
+
+Dengan kata lain, perbandingan kecepatan _response time_ konsep publish-subscribe **45.4%** lebih baik daripada DI.
+
+## Chapter 6: The Conclusion
+
+Implementasi EventBus dengan pendekatan Event-Driven di Golang membuktikan bahwa kita bisa mendapatkan modularitas, skalabilitas, dan kecepatan respon yang lebih baik tanpa harus buru-buru pakai solusi _heavyweight_ seperti Kafka atau RabbitMQ. Terutama untuk aplikasi skala low-medium. Dengan fitur dasar seperti `Publish`, `Subscribe`, dan `Unsubscribe` yang didukung goroutines, channels, dan mekanisme locking yang tepat, kode dapat menjadi _loosely coupled_ dan lebih mudah dilakukan kedepannya.
+
+Namun perlu diingat, pendekatan ini memiliki batasan. Apabila aplikasi _readers_ nantinya melibatkan ribuan event per detik, distribusi antar server, atau butuh persistensi event jangka panjang, _readers_ mungkin akan butuh sistem yang lebih kompleks.
+
+Intinya, eventBus(dalam konteks monolith/Golang) adalah senjata yang _powerful_ untuk memperkecil _coupling_(ketergantungan), mempercepat waktu respon, dan menjaga _codebase_ tetap _manageable_, asalkan diimplementasikan dengan awareness terhadap skala dan kebutuhan sistem ke depan.
+
+### **Helpful Links**
+
+Github Repo → [disini](https://github.com/rayhan889/ecovera-backend)
+
+Skema Database → [disini](https://dbdocs.io/raydev1604/Ecovera-DB-Schema)

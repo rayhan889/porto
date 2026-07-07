@@ -1,6 +1,8 @@
 import { defineConfig, defineCollection, s } from "velite";
 import rehypePrettyCode from "rehype-pretty-code";
 import { slugify, stripMarkdownInline } from "./lib/slug";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
 
 function extractToc(raw: string) {
   const headingRegex = /^##\s+(.+)$/gm;
@@ -62,6 +64,8 @@ export default defineConfig({
           filterMetaString: (meta: number) => `${meta} showLineNumbers`,
         },
       ],
+      rehypeKatex,
     ],
+    remarkPlugins: [remarkMath],
   },
 });

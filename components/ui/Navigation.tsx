@@ -10,7 +10,7 @@ import {
   CornerDownRight,
   Globe,
 } from "lucide-react";
-import { useTimeResolutionStore } from "@/store/useTimeResolution";
+import { useTimeResolutionStore } from "@/store/useTimeResolutionStore";
 import { useWorkCount } from "@/store/selectors";
 
 export function Navigation() {
@@ -63,7 +63,7 @@ export function Navigation() {
     { href: "/", label: "Home" },
     { href: "/about", label: "About" },
     { href: "/projects", label: `Work (${workCount})` },
-    { href: "/writings", label: "Writings" },
+    { href: "/writings", label: "Writing" },
     { href: "/uses", label: "Uses" },
   ];
 
