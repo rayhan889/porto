@@ -5,13 +5,25 @@ import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import {
+  BookOpenText,
+  Briefcase,
   ChevronLeft,
   ChevronRight,
   CornerDownRight,
   Globe,
+  Laptop,
+  User,
 } from "lucide-react";
 import { useTimeResolutionStore } from "@/store/useTimeResolutionStore";
 import { useWorkCount } from "@/store/selectors";
+
+const pathnameToIcon: Record<string, React.ElementType> = {
+  "/": Globe,
+  "/about": User,
+  "/projects": Briefcase,
+  "/writings": BookOpenText,
+  "/uses": Laptop,
+};
 
 export function Navigation() {
   const pathname = usePathname();
@@ -67,9 +79,11 @@ export function Navigation() {
     { href: "/uses", label: "Uses" },
   ];
 
+  const Icon = pathnameToIcon[pathname] ?? Globe;
+
   return (
     <>
-      <header className="xl:hidden fixed top-0 w-full z-50 gap-4 flex items-center justify-between p-4 bg-background/80 backdrop-blur-md border-b">
+      <header className="xl:hidden fixed top-0 w-full z-50 gap-4 flex items-center justify-between p-4 bg-background/80 backdrop-blur-sm border-b transform-gpu">
         <button
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           className="p-2 text-muted-foreground hover:text-foreground transition-colors"
@@ -125,30 +139,32 @@ export function Navigation() {
 
       <nav className="hidden xl:block xl:fixed top-24 left-24 z-50">
         <div className="max-w-6xl mx-2 px-4 py-4 h-auto flex flex-col gap-3">
-          <Globe size={20} className="text-muted-foreground" />
+          <Icon size={20} className="text-muted-foreground" />
           <span className="text-sm font-medium text-muted-foreground">
             Menu
           </span>
           <ul className="flex gap-2 flex-col">
-            {links.map((link) => (
-              <li key={link.href} className="flex items-center gap-x-2">
-                <CornerDownRight
-                  size={14}
-                  className="text-muted-foreground font-medium"
-                />
-                <Link
-                  href={link.href}
-                  className={cn(
-                    "text-sm font-medium transition-all hover:text-accent-foreground hover:translate-x-2",
-                    link.href === pathname
-                      ? "text-white"
-                      : "text-muted-foreground",
-                  )}
-                >
-                  {link.label}
-                </Link>
-              </li>
-            ))}
+            {links.map((link) => {
+              return (
+                <li key={link.href} className="flex items-center gap-x-2">
+                  <CornerDownRight
+                    size={14}
+                    className="text-muted-foreground font-medium"
+                  />
+                  <Link
+                    href={link.href}
+                    className={cn(
+                      "text-sm font-medium transition-all hover:text-accent-foreground hover:translate-x-2",
+                      link.href === pathname
+                        ? "text-white"
+                        : "text-muted-foreground",
+                    )}
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              );
+            })}
           </ul>
         </div>
       </nav>

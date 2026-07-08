@@ -8,10 +8,10 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { GameEmbed } from "./GameEmbed";
+import { GameEmbedLoader } from "./GameEmbedLoader";
 
 export const metadata: Metadata = {
-  title: "Tale of Samurai",
+  title: "Tale of Samurai | Projects | Rayhan Atmadja",
   description:
     "A turn-based pixel-art samurai battle game, written in Python with pygame and compiled to WebAssembly via pygbag.",
 };
@@ -53,7 +53,7 @@ export default function TaleOfSamuraiPage() {
           </p>
         </div>
 
-        <GameEmbed />
+        <GameEmbedLoader />
       </main>
     </div>
   );

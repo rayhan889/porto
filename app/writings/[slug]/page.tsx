@@ -1,7 +1,6 @@
-"use client";
-
-import { notFound, usePathname } from "next/navigation";
-import { posts, type Post } from "@/.velite";
+import { notFound } from "next/navigation";
+import type { Metadata } from "next";
+import { posts } from "@/.velite";
 import { MDXContent } from "@/components/ui/MDXContent";
 import { TableOfContents } from "@/components/ui/TableOfContents";
 import { formatDate } from "@/lib/date";
@@ -13,54 +12,40 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { useEffect, useState, Fragment } from "react";
+import { Fragment } from "react";
 import Link from "next/link";
 
-export default function BlogPostPage({
-  params,
-}: Readonly<{
+type Props = Readonly<{
   params: Promise<{ slug: string }>;
-}>) {
-  const pathname = usePathname();
+}>;
 
-  const pathSegments = pathname.split("/").filter((segment) => segment !== "");
+function getPost(slug: string) {
+  return posts.find((p) => p.slug === slug && p.published);
+}
 
-  const [post, setPost] = useState<Post | undefined>({
-    slug: "",
-    permalink: "",
-    title: "",
-    description: "",
-    date: "",
-    published: false,
-    body: "",
-    tags: [],
-    raw: undefined,
-    toc: [],
-  });
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params;
+  const post = getPost(slug);
+
+  if (!post) {
+    return {};
+  }
+
+  return {
+    title: `${post.title} | Writing | Rayhan Atmadja`,
+    description: post.description,
+  };
+}
+
+export default async function BlogPostPage({ params }: Props) {
+  const { slug } = await params;
+  const post = getPost(slug);
 
   if (!post) {
     notFound();
   }
 
-  useEffect(() => {
-    const fetchPost = async () => {
-      try {
-        const { slug } = await params;
-        setPost(posts.find((p) => p.slug === slug && p.published));
-      } catch (error) {
-        console.error("Failed to fetch data:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchPost();
-  }, [params]);
-
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
+  const pathSegments = ["writings", post.slug];
 
   return (
     <div className="w-full relative">
