@@ -64,7 +64,7 @@ export const IntroSection = () => {
 
           <div className="flex items-center gap-x-3 sm:gap-x-4 md:gap-x-5 w-full">
             <Image
-              src="/profile_colored.png"
+              src="/profile_colored.webp"
               alt="Pic of Me"
               width={80}
               height={80}

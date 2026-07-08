@@ -15,6 +15,9 @@ buildVelite().catch(console.error);
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  images: {
+    formats: ["image/avif", "image/webp"],
+  },
   async headers() {
     return [
       {

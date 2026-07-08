@@ -48,6 +48,10 @@ export default function RootLayout({
                 "radial-gradient(ellipse 80% 80% at 50% 0%, #000 20%, transparent 80%)",
               WebkitMaskImage:
                 "radial-gradient(ellipse 80% 80% at 50% 0%, #000 20%, transparent 80%)",
+              // Promote to its own compositor layer so it isn't repainted on
+              // every scroll frame as content scrolls over it.
+              transform: "translateZ(0)",
+              contain: "layout paint style",
             }}
           />
           <ThemeProvider

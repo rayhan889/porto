@@ -1,11 +1,9 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import { JavaIcon } from "../icon/JavaIcon";
 import { SpringIcon } from "../icon/SpringIcon";
 import { GoIcon } from "../icon/GoIcon";
 import { DockerIcon } from "../icon/DockerIcon";
-import { KafkaIcon } from "../icon/KafkaIcon";
 import { PostgresIcon } from "../icon/PostgresIcon";
 import { GrafanaIcon } from "../icon/GrafanaIcon";
 import { TypescriptIcon } from "../icon/NextJSIcon";
@@ -138,17 +136,17 @@ export const Stack = () => {
                 bg-muted/50 rounded-xl border border-transparent
                 hover:-translate-y-1
                 hover:border-border/50 hover:bg-background/80 hover:shadow-lg hover:shadow-muted/20
-                transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]
+                transition-[transform,opacity,border-color,background-color,box-shadow] duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]
                 cursor-default active:scale-[0.98]
                 min-h-[100px] sm:min-h-[110px] md:min-h-[120px]
-                backdrop-blur-sm
-                will-change-transform
+                backdrop-blur-sm transform-gpu
+                group-hover:will-change-transform
                 ${bentoClasses}
                 lg:aspect-auto
                 ${
                   isVisible
                     ? "opacity-100 translate-y-0 scale-100"
-                    : "opacity-0 translate-y-8 scale-95"
+                    : "opacity-0 translate-y-8 scale-95 will-change-transform"
                 }
               `}
                 style={{

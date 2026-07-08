@@ -10,6 +10,7 @@ import {
   useRef,
 } from "react";
 import * as runtime from "react/jsx-runtime";
+import Image from "next/image";
 import { Check, Copy } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { slugify } from "@/lib/slug";
@@ -74,7 +75,7 @@ function Pre({
         type="button"
         onClick={copy}
         aria-label={copied ? "Copied" : "Copy code"}
-        className="absolute right-2 top-2 rounded-md border bg-background/70 p-1.5 opacity-0 backdrop-blur transition group-hover:opacity-100 focus-visible:opacity-100"
+        className="absolute right-2 top-2 rounded-md border bg-background/70 p-1.5 opacity-0 backdrop-blur transform-gpu transition group-hover:opacity-100 focus-visible:opacity-100"
       >
         {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
       </button>
@@ -136,6 +137,22 @@ const overrides: Record<string, ComponentType<HTMLAttributes<HTMLElement>>> = {
       {children}
     </h6>
   ),
+  img: ({
+    src,
+    alt,
+  }: HTMLAttributes<HTMLImageElement> & { src?: string; alt?: string }) => {
+    if (typeof src !== "string" || src.length === 0) return null;
+    return (
+      <Image
+        src={src}
+        alt={alt ?? ""}
+        width={0}
+        height={0}
+        sizes="(max-width: 768px) 100vw, 768px"
+        className="my-6 h-auto w-full rounded-lg border"
+      />
+    );
+  },
   pre: (props: HTMLAttributes<HTMLPreElement>) => <Pre {...props} />,
   code: ({
     children,
