@@ -25,6 +25,33 @@ const pathnameToIcon: Record<string, React.ElementType> = {
   "/uses": Laptop,
 };
 
+function getIconForPathname(pathname: string): React.ElementType {
+  if (pathnameToIcon[pathname]) {
+    return pathnameToIcon[pathname];
+  }
+
+  const matchedPath = Object.keys(pathnameToIcon)
+    .filter((path) => path !== "/")
+    .sort((a, b) => b.length - a.length)
+    .find((path) => pathname.startsWith(`${path}/`));
+
+  return matchedPath ? pathnameToIcon[matchedPath] : Globe;
+}
+
+function NavIcon({
+  pathname,
+  size,
+  className,
+}: {
+  pathname: string;
+  size?: number;
+  className?: string;
+}) {
+  const IconComponent = getIconForPathname(pathname);
+  // eslint-disable-next-line react-hooks/static-components
+  return <IconComponent size={size} className={className} />;
+}
+
 export function Navigation() {
   const pathname = usePathname();
 
@@ -78,8 +105,6 @@ export function Navigation() {
     { href: "/writings", label: "Writing" },
     { href: "/uses", label: "Uses" },
   ];
-
-  const Icon = pathnameToIcon[pathname] ?? Globe;
 
   return (
     <>
@@ -139,7 +164,11 @@ export function Navigation() {
 
       <nav className="hidden xl:block xl:fixed top-24 left-24 z-50">
         <div className="max-w-6xl mx-2 px-4 py-4 h-auto flex flex-col gap-3">
-          <Icon size={20} className="text-muted-foreground" />
+          <NavIcon
+            pathname={pathname}
+            size={20}
+            className="text-muted-foreground"
+          />
           <span className="text-sm font-medium text-muted-foreground">
             Menu
           </span>

@@ -53,6 +53,8 @@ export function GameEmbed() {
             src="/games/tale-of-samurai/poster.webp"
             alt="Tale of samurai poster"
             fill
+            sizes="20"
+            loading="eager"
             className="opacity-50 transition-opacity duration-300 group-hover:opacity-100"
           />
 

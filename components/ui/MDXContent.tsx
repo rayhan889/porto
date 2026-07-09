@@ -58,7 +58,7 @@ function Pre({
   children,
   className,
   ...props
-}: HTMLAttributes<HTMLPreElement>) {
+}: Readonly<HTMLAttributes<HTMLPreElement>>) {
   const ref = useRef<HTMLPreElement>(null);
   const [copied, setCopied] = useState(false);
 
@@ -111,14 +111,18 @@ const overrides: Record<string, ComponentType<HTMLAttributes<HTMLElement>>> = {
       </h2>
     );
   },
-  h3: ({ children, ...props }: HTMLAttributes<HTMLHeadingElement>) => (
-    <h3
-      className="scroll-m-20 text-2xl font-semibold tracking-tight"
-      {...props}
-    >
-      {children}
-    </h3>
-  ),
+  h3: ({ children, ...props }: HTMLAttributes<HTMLHeadingElement>) => {
+    const id = slugify(getTextContent(children));
+    return (
+      <h3
+        id={id}
+        className="scroll-m-20 text-2xl font-semibold tracking-tight"
+        {...props}
+      >
+        {children}
+      </h3>
+    );
+  },
   h4: ({ children, ...props }: HTMLAttributes<HTMLHeadingElement>) => (
     <h4 className="scroll-m-20 text-xl font-semibold tracking-tight" {...props}>
       {children}

@@ -86,8 +86,10 @@ export default async function BlogPostPage({ params }: Props) {
         </Breadcrumb>
 
         <div className="my-10">
-          <time className="text-sm text-muted-foreground">
+          <time className="text-sm text-muted-foreground capitalize flex items-center gap-2">
             {formatDate(post.date)}
+            <div className="circle-divider"></div>
+            {post.readingTime}
           </time>
           <h1 className="mt-2 text-3xl font-bold tracking-tight text-foreground">
             {post.title}

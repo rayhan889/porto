@@ -3,15 +3,17 @@ import rehypePrettyCode from "rehype-pretty-code";
 import { slugify, stripMarkdownInline } from "./lib/slug";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
+import readingTime from "reading-time";
 
 function extractToc(raw: string) {
-  const headingRegex = /^##\s+(.+)$/gm;
-  const toc: { id: string; title: string }[] = [];
+  const headingRegex = /^(#{2,3})\s+(.+)$/gm;
+  const toc: { id: string; title: string; level: 2 | 3 }[] = [];
   let match;
   while ((match = headingRegex.exec(raw)) !== null) {
-    const title = stripMarkdownInline(match[1].trim());
+    const level = match[1].length as 2 | 3;
+    const title = stripMarkdownInline(match[2].trim());
     const id = slugify(title);
-    toc.push({ id, title });
+    toc.push({ id, title, level });
   }
   return toc;
 }
@@ -29,17 +31,20 @@ const posts = defineCollection({
       tags: s.array(s.string()).optional(),
       body: s.mdx(),
       raw: s.raw(),
+      readingTime: s.string().optional(),
     })
     .transform((data) => {
       const slug = data.slug.replace(/^blog\//, "");
       const toc = extractToc(data.raw);
-      console.log(toc);
+
+      const stats = readingTime(data.raw);
       return {
         ...data,
         slug,
         permalink: `/blog/${slug}`,
         toc,
         raw: undefined,
+        readingTime: stats.text,
       };
     }),
 });
