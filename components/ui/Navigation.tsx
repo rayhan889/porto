@@ -22,7 +22,7 @@ const pathnameToIcon: Record<string, React.ElementType> = {
   "/about": User,
   "/projects": Briefcase,
   "/writings": BookOpenText,
-  "/uses": Laptop,
+  "/tools": Laptop,
 };
 
 function getIconForPathname(pathname: string): React.ElementType {
@@ -103,7 +103,7 @@ export function Navigation() {
     { href: "/about", label: "About" },
     { href: "/projects", label: `Work (${workCount})` },
     { href: "/writings", label: "Writing" },
-    { href: "/uses", label: "Uses" },
+    { href: "/tools", label: "Tools" },
   ];
 
   return (
