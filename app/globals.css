@@ -128,6 +128,12 @@
   html {
     @apply font-sans;
   }
+  .circle-divider {
+    width: 4px;
+    height: 4px;
+    border-radius: 100%;
+    background-color: var(--accent);
+  }
 }
 
 /* Respect users who prefer reduced motion; also a cheap smoothness win on

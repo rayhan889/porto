@@ -102,34 +102,48 @@ export const IntroSection = () => {
             variant="outline"
             size="lg"
             className="group w-full md:w-fit flex items-center gap-1.5 transition-all duration-300 hover:border-foreground/40 hover:bg-accent/50 hover:shadow-sm"
+            asChild
           >
-            <ArrowUpRight
-              size={20}
-              className="text-muted-foreground transition-transform duration-300 ease-out group-hover:rotate-45 group-hover:text-foreground"
-            />
-            <span className="transition-colors duration-300 group-hover:text-foreground">
-              LinkedIn
-            </span>
+            <Link
+              href="https://www.linkedin.com/in/rayhan-atmadja/"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Rayhan's Linkedin"
+            >
+              <ArrowUpRight
+                size={20}
+                className="text-muted-foreground transition-transform duration-300 ease-out group-hover:rotate-45 group-hover:text-foreground"
+              />
+              <span className="transition-colors duration-300 group-hover:text-foreground">
+                LinkedIn
+              </span>
+            </Link>
           </Button>
 
           <Button
             variant="outline"
             size="lg"
             className="group w-full md:w-fit flex items-center gap-1.5 transition-all duration-300 hover:border-foreground/40 hover:bg-accent/50 hover:shadow-sm"
+            asChild
           >
-            <div className="relative h-5 w-5 shrink-0 text-muted-foreground transition-colors duration-300 group-hover:text-foreground">
-              <Mail
-                size={20}
-                className="absolute inset-0.5 transition-all duration-300 ease-out scale-100 opacity-100 group-hover:scale-75 group-hover:opacity-0"
-              />
-              <MailOpen
-                size={20}
-                className="absolute inset-0.5 transition-all duration-300 ease-out scale-75 opacity-0 group-hover:scale-100 group-hover:opacity-100"
-              />
-            </div>
-            <span className="transition-colors duration-300 group-hover:text-foreground">
-              Email
-            </span>
+            <Link
+              href="mailto:workspace.rayhanatmadja@gmail.com"
+              aria-label="Send email to Rayhan"
+            >
+              <div className="relative h-5 w-5 shrink-0 text-muted-foreground transition-colors duration-300 group-hover:text-foreground">
+                <Mail
+                  size={20}
+                  className="absolute inset-0.5 transition-all duration-300 ease-out scale-100 opacity-100 group-hover:scale-75 group-hover:opacity-0"
+                />
+                <MailOpen
+                  size={20}
+                  className="absolute inset-0.5 transition-all duration-300 ease-out scale-75 opacity-0 group-hover:scale-100 group-hover:opacity-100"
+                />
+              </div>
+              <span className="transition-colors duration-300 group-hover:text-foreground">
+                Email
+              </span>
+            </Link>
           </Button>
         </div>
       </div>

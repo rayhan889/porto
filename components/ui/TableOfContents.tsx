@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 interface TocSection {
   id: string;
   title: string;
+  level: 2 | 3;
 }
 
 interface TableOfContentsProps {
@@ -91,16 +92,17 @@ export function TableOfContents({ sections }: Readonly<TableOfContentsProps>) {
       <div className="space-y-1">
         <p className="mb-4 text-sm font-semibold">On this page</p>
         <ul className="space-y-2.5 border-l border-neutral-200 dark:border-neutral-800">
-          {sections.map(({ id, title }) => (
+          {sections.map(({ id, title, level }) => (
             <li key={id}>
               <a
                 href={`#${id}`}
                 onClick={(e) => handleClick(e, id)}
                 className={cn(
-                  "block border-l-2 py-1 pl-4 pr-2 text-sm transition-colors hover:text-neutral-900 dark:hover:text-neutral-100",
+                  "block border-l-2 text-sm py-1 pl-4 pr-2 transition-colors hover:text-neutral-900 dark:hover:text-neutral-100",
                   activeId === id
                     ? "-ml-0.5 border-neutral-900 font-medium text-neutral-900 dark:border-neutral-100 dark:text-neutral-100"
                     : "border-transparent text-neutral-500 dark:text-neutral-400",
+                  level === 2 ? "pl-4 text-sm" : level === 3 ? "pl-8" : "",
                 )}
               >
                 {title}
