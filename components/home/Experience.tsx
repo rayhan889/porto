@@ -7,7 +7,7 @@ export const Experience = () => {
     <section className="w-full mt-10">
       <div className="flex flex-col space-y-8">
         <div>
-          <h2 className="font-bold text-foreground">
+          <h2 className="font-bold text-foreground font-mono">
             Experience{" "}
             <span className="text-muted-foreground text-xs">
               ({experiences.length})
@@ -24,7 +24,7 @@ export const Experience = () => {
                 key={index}
                 className="group relative pl-10 sm:pl-12 transition-transform duration-300 ease-out hover:translate-x-1"
               >
-                <div className="absolute left-0 top-1 flex items-center justify-center h-6 w-6 rounded-sm text-xs font-bold border border-muted-foreground bg-primary transition-colors duration-300 group-hover:bg-foreground group-hover:text-background group-hover:border-foreground">
+                <div className="absolute left-0 top-1 flex items-center justify-center h-6 w-6 rounded-sm text-xs font-bold border border-muted-foreground bg-primary transition-colors duration-300 group-hover:bg-foreground group-hover:text-background group-hover:border-foreground font-mono">
                   {index + 1}
                 </div>
 
@@ -46,7 +46,7 @@ export const Experience = () => {
                         </a>
                       </h3>
                     </div>
-                    <div className="text-sm text-muted-foreground whitespace-nowrap transition-colors duration-300 group-hover:text-foreground/80">
+                    <div className="text-sm font-mono text-muted-foreground whitespace-nowrap transition-colors duration-300 group-hover:text-foreground/80">
                       {exp.startDate} – {exp.endDate}
                     </div>
                   </div>

@@ -61,8 +61,9 @@ export function Footer() {
           <hr className="border-accent/40 sm:hidden" />
           <div className="flex flex-col-reverse sm:flex-row sm:items-center justify-between gap-4 text-center sm:text-left">
             <p className="text-xs sm:text-sm text-muted-foreground">
-              &copy; {new Date().getFullYear()} Rayhan Hendra Atmadja. All
-              rights reserved.
+              &copy;{" "}
+              <span className="font-mono">{new Date().getFullYear()}</span>{" "}
+              Rayhan Hendra Atmadja. All rights reserved.
             </p>
 
             <button

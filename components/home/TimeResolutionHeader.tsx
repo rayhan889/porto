@@ -29,7 +29,7 @@ export const TimeResolutionHeader = () => {
   }
 
   return (
-    <div className="bg-linear-180 from-black via-black/70 to-transparent fixed top-0 left-0 w-full flex items-center justify-between text-sm p-6 z-50">
+    <div className="bg-linear-180 from-black via-black/70 to-transparent fixed top-0 left-0 w-full hidden lg:flex items-center justify-between text-sm p-6 z-50">
       <span className="font-mono">{time}</span>
       <span className="font-mono">{resolution}</span>
     </div>

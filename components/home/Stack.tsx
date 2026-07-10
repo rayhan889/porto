@@ -1,52 +1,17 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import { SpringIcon } from "../icon/SpringIcon";
-import { GoIcon } from "../icon/GoIcon";
-import { DockerIcon } from "../icon/DockerIcon";
-import { PostgresIcon } from "../icon/PostgresIcon";
-import { GrafanaIcon } from "../icon/GrafanaIcon";
-import { TypescriptIcon } from "../icon/NextJSIcon";
-import { PythonIcon } from "../icon/PythonIcon";
-import { RedisIcon } from "../icon/RedisIcon";
-import { ReactIcon } from "../icon/ReactIcon";
 import Link from "next/link";
+import { useStacks } from "@/store/selectors";
 
 const STAGGER_MS = 45;
-
-interface StackItem {
-  title: string;
-  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
-  link: string;
-}
-
-const stacks: StackItem[] = [
-  { title: "Go", icon: GoIcon, link: "https://go.dev/" },
-  {
-    title: "Springboot",
-    icon: SpringIcon,
-    link: "https://spring.io/projects/spring-boot",
-  },
-  { title: "Docker", icon: DockerIcon, link: "https://www.docker.com/" },
-  {
-    title: "Postgres",
-    icon: PostgresIcon,
-    link: "https://www.postgresql.org/",
-  },
-  { title: "Grafana", icon: GrafanaIcon, link: "https://grafana.com/" },
-  {
-    title: "Typescript",
-    icon: TypescriptIcon,
-    link: "https://www.typescriptlang.org/",
-  },
-  { title: "Python", icon: PythonIcon, link: "https://www.python.org/" },
-  { title: "Redis", icon: RedisIcon, link: "https://redis.io/" },
-  { title: "React", icon: ReactIcon, link: "https://react.dev/" },
-];
+const SELECTED_STACK = 9;
 
 export const Stack = () => {
   const [isVisible, setIsVisible] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
+
+  const selectedStacks = useStacks().slice(0, SELECTED_STACK);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -95,7 +60,7 @@ export const Stack = () => {
         <div className="flex items-baseline gap-2">
           <h2
             className={`
-            font-bold text-foreground transition-all duration-700 ease-out
+            font-bold font-mono text-foreground transition-all duration-700 ease-out
             ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}
           `}
           >
@@ -107,7 +72,7 @@ export const Stack = () => {
             ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}
           `}
           >
-            ({stacks.length})
+            ({selectedStacks.length})
           </span>
         </div>
 
@@ -118,7 +83,7 @@ export const Stack = () => {
           auto-rows-fr
         "
         >
-          {stacks.map((item, i) => {
+          {selectedStacks.map((item, i) => {
             const Icon = item.icon;
             const bentoClasses = getBentoClasses(i);
             const isFeatured =

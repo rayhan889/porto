@@ -35,7 +35,19 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <div className="w-full relative">
-          {/* Diagonal Fade Grid Background - Top Left */}
+          <div
+            aria-hidden="true"
+            className="fixed inset-0 z-0 pointer-events-none"
+            style={{
+              backgroundImage: `
+                radial-gradient(45vmax circle at 15% 20%, rgba(var(--glow-purple), var(--glow-opacity-1)), transparent 85%),
+                radial-gradient(38vmax circle at 85% 75%, rgba(var(--glow-purple), var(--glow-opacity-2)), transparent 85%)
+              `,
+              backgroundRepeat: "no-repeat",
+              transform: "translateZ(0)",
+              contain: "layout paint style",
+            }}
+          />
           <div
             className="fixed inset-0 z-0 pointer-events-none"
             style={{
@@ -48,8 +60,6 @@ export default function RootLayout({
                 "radial-gradient(ellipse 80% 80% at 50% 0%, #000 20%, transparent 80%)",
               WebkitMaskImage:
                 "radial-gradient(ellipse 80% 80% at 50% 0%, #000 20%, transparent 80%)",
-              // Promote to its own compositor layer so it isn't repainted on
-              // every scroll frame as content scrolls over it.
               transform: "translateZ(0)",
               contain: "layout paint style",
             }}
@@ -60,7 +70,7 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            <div className="flex flex-col flex-1 items-center justify-center font-sans">
+            <div className="flex flex-col flex-1 items-center justify-center font-sans relative z-10">
               <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between px-6 md:px-16 sm:items-start pt-32">
                 <TimeResolutionHeader />
                 <Navigation />
