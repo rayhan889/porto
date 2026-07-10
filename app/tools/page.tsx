@@ -45,7 +45,7 @@ export default function ToolsPage() {
       </div>
 
       <Image
-        src="/workstation.webp"
+        src="/workstation.png"
         alt="Workstation"
         width={0}
         height={0}
