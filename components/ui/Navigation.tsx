@@ -9,7 +9,6 @@ import {
   Briefcase,
   ChevronLeft,
   ChevronRight,
-  CornerDownRight,
   Globe,
   Laptop,
   User,
@@ -24,6 +23,10 @@ const pathnameToIcon: Record<string, React.ElementType> = {
   "/writings": BookOpenText,
   "/tools": Laptop,
 };
+
+function formatMenuNumber(index: number): string {
+  return `${String(index + 1).padStart(2, "0")}.`;
+}
 
 function getIconForPathname(pathname: string): React.ElementType {
   if (pathnameToIcon[pathname]) {
@@ -101,8 +104,8 @@ export function Navigation() {
   const links = [
     { href: "/", label: "Home" },
     { href: "/about", label: "About" },
-    { href: "/projects", label: `Work (${workCount})` },
-    { href: "/writings", label: "Writing" },
+    { href: "/projects", label: `Works (${workCount})` },
+    { href: "/writings", label: "Writings" },
     { href: "/tools", label: "Tools" },
   ];
 
@@ -130,12 +133,11 @@ export function Navigation() {
       {isMobileMenuOpen && (
         <nav className="xl:hidden fixed inset-0 top-[65px] z-40 bg-background flex flex-col p-6 space-y-24 animate-in fade-in slide-in-from-top-4 duration-200">
           <ul className="flex gap-6 flex-col mt-4">
-            {links.map((link) => (
+            {links.map((link, index) => (
               <li key={link.href} className="flex items-center gap-x-3">
-                <CornerDownRight
-                  size={18}
-                  className="text-muted-foreground font-medium"
-                />
+                <span className="text-xl font-mono font-medium text-muted-foreground">
+                  {formatMenuNumber(index)}
+                </span>
                 <Link
                   href={link.href}
                   className={cn(
@@ -169,21 +171,18 @@ export function Navigation() {
             size={20}
             className="text-muted-foreground"
           />
-          <span className="text-sm font-medium text-muted-foreground">
-            Menu
-          </span>
+          <span className="font-medium text-muted-foreground">Menu</span>
           <ul className="flex gap-2 flex-col">
-            {links.map((link) => {
+            {links.map((link, index) => {
               return (
                 <li key={link.href} className="flex items-center gap-x-2">
-                  <CornerDownRight
-                    size={14}
-                    className="text-muted-foreground font-medium"
-                  />
+                  <span className="font-mono font-medium text-muted-foreground">
+                    {formatMenuNumber(index)}
+                  </span>
                   <Link
                     href={link.href}
                     className={cn(
-                      "text-sm font-medium transition-all hover:text-accent-foreground hover:translate-x-2",
+                      "font-medium transition-all hover:text-accent-foreground hover:translate-x-2",
                       link.href === pathname
                         ? "text-white"
                         : "text-muted-foreground",
