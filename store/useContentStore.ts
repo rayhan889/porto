@@ -109,6 +109,15 @@ const works: WorkItem[] = [
     technologies: ["Pygame", "Python"],
     blank: false,
   },
+  {
+    title: "Job Portal CLI",
+    category: "CLI",
+    projectUrl: "https://github.com/rayhan889/job-portal-cli",
+    description:
+      "Linkedin-like CLI based program that let's find you find your desired job.",
+    technologies: ["Java"],
+    blank: true,
+  },
 ];
 
 const awardsCertifications: AwardCertifItem[] = [
