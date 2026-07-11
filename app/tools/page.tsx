@@ -56,7 +56,10 @@ export default function ToolsPage() {
 
       <div className="grid grid-cols-2 gap-3 mt-4">
         {device.map((item) => (
-          <div key={item.label} className="border border-accent rounded-lg p-4">
+          <div
+            key={item.label}
+            className="border bg-background/60 backdrop-blur-sm transform-gpu border-muted rounded-lg p-4"
+          >
             <span className="inline-flex items-center gap-1.5 py-1 rounded-md text-sm font-semiboldw-fit">
               {item.label}
             </span>
