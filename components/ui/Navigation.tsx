@@ -111,7 +111,7 @@ export function Navigation() {
 
   return (
     <>
-      <header className="xl:hidden fixed top-0 w-full z-50 gap-4 flex items-center justify-between p-4 bg-background/80 backdrop-blur-sm border-b transform-gpu">
+      <header className="lg:hidden fixed top-0 left-0 w-full z-50 gap-4 flex items-center justify-between p-4 bg-background border-b ">
         <button
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           className="p-2 text-muted-foreground hover:text-foreground transition-colors"
@@ -164,7 +164,7 @@ export function Navigation() {
         </nav>
       )}
 
-      <nav className="hidden xl:block xl:fixed top-24 left-24 z-50">
+      <nav className="hidden lg:block lg:fixed top-24 left-24 z-50">
         <div className="max-w-6xl mx-2 px-4 py-4 h-auto flex flex-col gap-3">
           <NavIcon
             pathname={pathname}

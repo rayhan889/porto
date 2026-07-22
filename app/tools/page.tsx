@@ -75,9 +75,9 @@ export default function ToolsPage() {
         <span className="font-mono text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           Latest update — Jul 2026
         </span>
-        <p className="text-sm md:text-base leading-relaxed text-accent-foreground mt-1.5">
+        <p className="text-sm leading-relaxed text-accent-foreground mt-1.5">
           Switched from the default Terminal to Ghostty for GPU-accelerated
-          rendering, then rebuilt the prompt on Starship for faster shell
+          rendering, then rebuilt the prompt on Oh-my-zsh for faster shell
           startup.
         </p>
       </div>
