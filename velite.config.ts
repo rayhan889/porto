@@ -41,7 +41,7 @@ const posts = defineCollection({
       return {
         ...data,
         slug,
-        permalink: `/blog/${slug}`,
+        permalink: `/writings/${slug}`,
         toc,
         raw: undefined,
         readingTime: stats.text,

@@ -10,10 +10,22 @@ import {
 } from "@/components/ui/breadcrumb";
 import { GameEmbedLoader } from "./GameEmbedLoader";
 
+const description =
+  "A turn-based pixel-art samurai battle game, written in Python with pygame and compiled to WebAssembly via pygbag.";
+
 export const metadata: Metadata = {
-  title: "Tale of Samurai | Projects | Rayhan Atmadja",
-  description:
-    "A turn-based pixel-art samurai battle game, written in Python with pygame and compiled to WebAssembly via pygbag.",
+  // The root layout's title template appends " | Rayhan Atmadja".
+  title: "Tale of Samurai | Projects",
+  description,
+  alternates: {
+    canonical: "/projects/tale-of-samurai",
+  },
+  openGraph: {
+    type: "website",
+    url: "/projects/tale-of-samurai",
+    title: "Tale of Samurai",
+    description,
+  },
 };
 
 export default function TaleOfSamuraiPage() {

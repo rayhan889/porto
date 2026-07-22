@@ -32,8 +32,25 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   return {
-    title: `${post.title} | Writing | Rayhan Atmadja`,
+    // The root layout's title template appends " | Rayhan Atmadja".
+    title: `${post.title} | Writing`,
     description: post.description,
+    alternates: {
+      canonical: `/writings/${slug}`,
+    },
+    openGraph: {
+      type: "article",
+      url: `/writings/${slug}`,
+      title: post.title,
+      description: post.description,
+      publishedTime: post.date,
+      tags: post.tags,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: post.title,
+      description: post.description,
+    },
   };
 }
 
