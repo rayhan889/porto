@@ -33,6 +33,7 @@ export interface AwardCertifItem {
   title: string;
   issuer: string;
   date: string;
+  certUrl?: string;
 }
 
 export interface StackItem {

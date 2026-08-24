@@ -196,7 +196,14 @@ export default function AboutPage() {
                 </td>
 
                 <td className="text-foreground pt-1 md:pt-0 md:px-4 md:w-2/5">
-                  {award.title}
+                <Link
+                    href={award.certUrl || "#"}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-block text-foreground border-b border-transparent hover:border-current transition-colors duration-300"
+                  >
+                    {award.title}
+                  </Link>
                 </td>
 
                 <td className="text-foreground pt-1 md:pt-0 md:px-4 md:w-2/5">

@@ -77,12 +77,12 @@ const educations: EducationItem[] = [
 
 const works: WorkItem[] = [
   {
-    title: "Simakerja Backend",
-    category: "REST API",
-    projectUrl: "https://github.com/rayhan889/simakerja-backend",
+    title: "Mock Stream Processing Pipeline",
+    category: "System Design",
+    projectUrl: "https://github.com/rayhan889/mock-streamprocess",
     description:
-      "REST API of UNESA Faculty of Tech partnership web app management system. Capable of handling MoA/IA between campuss as the first party and partners as the second party.",
-    technologies: ["Java", "OCR", "Spring Boot", "PostgreSQL"],
+      "A mock streaming pipeline that simulates ingesting tweets, cleaning them, and sinking the results to MongoDB. Built as a Kafka producer/consumer chain in Go.",
+    technologies: ["Go", "Kafka", "MongoDB", "Docker", "Python"],
     blank: true,
   },
   {
@@ -122,29 +122,28 @@ const works: WorkItem[] = [
 
 const awardsCertifications: AwardCertifItem[] = [
   {
-    title: "Go Basic",
-    issuer: "Hackerrank",
-    date: "Jul 2025",
+    title: "AWS Cloud Practitioner Essentials",
+    issuer: "AWS",
+    date: "Jan 2026",
+    certUrl: "https://drive.google.com/file/d/1kK_z29B1LmpaWOZgYyli92DksCxT5Iaa/view?usp=sharing"
   },
   {
-    title: "Practicum Co-Assistant Certification",
-    issuer: "Teknik Informatika UNESA",
-    date: "Jul 2025",
+    title: "Build Serverless Applications with Cloud Run Functions",
+    issuer: "Google Cloud",
+    date: "Jan 2026",
+    certUrl: "https://www.skills.google/public_profiles/63c4f142-0e83-41e7-856c-b89ede1426ee/badges/21719703"
   },
   {
-    title: "NodeJS & ReactJS Competency",
-    issuer: "DOT Indonesia",
-    date: "Mar 2023",
+    title: "The Basics of Google Cloud Compute ",
+    issuer: "Google Cloud",
+    date: "Jan 2026",
+    certUrl: "https://www.skills.google/public_profiles/63c4f142-0e83-41e7-856c-b89ede1426ee/badges/21680722"
   },
   {
-    title: "3rd Competitive Programming Codejam",
-    issuer: "HIMTI UNESA",
-    date: "Dec 2023",
-  },
-  {
-    title: "3rd Web Design Compettition",
-    issuer: "HIMASI UNAIR",
-    date: "Sept 2022",
+    title: "Introduction to Generative AI",
+    issuer: "IBM SkillsBuild",
+    date: "Dec 2025",
+    certUrl: "https://drive.google.com/file/d/1u05hgnneewyVvfLKsxS3GIM1tBvbHT_-/view?usp=sharing"
   },
 ];
 

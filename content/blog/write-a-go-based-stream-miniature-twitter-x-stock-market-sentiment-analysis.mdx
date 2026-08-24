@@ -1,0 +1,301 @@
+---
+title: Write a Go based Stream Miniature Twitter(X) Stock Market Sentiment Analysis
+description: Proof of concept on how stream process architecture works by creating its mock representation using Go and Kafka.
+date: 2026-08-23
+published: true
+tags:
+  - go
+  - kafka
+  - grpc
+  - stream-processing
+  - architecture
+  - mongodb
+---
+
+![Hero section img](/writings/mock_streamprocess_1.png "Mock stream process architecture overview")
+
+## Why I write this?
+
+Over the past few months, I've tried to understand the emotional side of stock market buying and selling activities. But, since I'm not good at all in analyzing the market fundamentals, its irrational side becomes the only way for me to (barely) understand it.
+
+> I said "**barely**" because the market is still considered to be a very big thing whose movement **I can't really understand**.
+
+## Then, what is the solution?
+
+Well, as a tech guy all I can do is try to build something that can actually serve people's emotions. Reflected from their tweets, extracted from X (formerly Twitter) and provide the information to me in maybe a web dashboard or simply a csv file.
+
+**What I'm going to build is a…**
+
+- Small, miniature stream analysis system
+- That has several layers to support its core architecture.
+- **The main goal is not the sentiment lexical result** (positive, negative, or neutral)
+- Rather it's a design system that can properly serve its purpose to conceptually extract, process, and store processed tweets to a certain destination that can be analyzed later.
+
+## How to build it?
+
+I started with the architecture diagram.
+
+Mock architecture that mimics the actual stream processing with four processes, two kafka topics, one gRPC call, one data store and data moving in a single direction.
+
+> Please ignore the usage of gRPC, since this was just me over-engineering something. The justification for it could be a typed contract across Go and Python, though it's just stringly-typed and not compile-time safe.
+
+![Mock stream process architecture diagram](/writings/mock_streamprocess_2.png "Mock stream process architecture")
+
+All four services (Go and Python) run on different, separate containers under docker compose, alongside a single kafka broker with KRaft mode. As for MongoDB, it points to Mongo Atlas via `MONGO_URI`.
+
+The explanation of all of those services, or you may call them stages, will be placed in the sections below.
+
+First, here's what the translation of all those services to **compose.yml** looked like,
+
+```yaml
+services:
+  kafka:
+    image: apache/kafka:4.0.0
+    ports:
+      - "9092:9092"
+      - "29092:29092"
+    environment:
+      # your kafka envs goes here
+
+  kafka-init:
+    image: apache/kafka:4.0.0
+    depends_on:
+      - kafka
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - >
+        until /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:29092 --create --if-not-exists --topic tweets.raw --partitions 1 --replication-factor 1 &&
+        /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:29092 --create --if-not-exists --topic tweets.clean --partitions 1 --replication-factor 1;
+        do echo "waiting for kafka to be ready..."; sleep 2; done
+
+  extractor-service:
+    build:
+      context: .
+      dockerfile: extractor-service/Dockerfile
+    depends_on:
+      kafka-init:
+        condition: service_completed_successfully
+    environment:
+      KAFKA_BROKER: ${KAFKA_BROKER}
+
+  processor-service:
+    build:
+      context: .
+      dockerfile: processor-service/Dockerfile
+    depends_on:
+      kafka-init:
+        condition: service_completed_successfully
+      sentiment-service:
+        condition: service_started
+    environment:
+      KAFKA_BROKER: ${KAFKA_BROKER}
+      SENTIMENT_SERVICE_HOST: ${SENTIMENT_SERVICE_HOST}
+      SENTIMENT_SERVICE_PORT: ${SENTIMENT_SERVICE_PORT}
+
+  sink-service:
+    build:
+      context: .
+      dockerfile: sink-service/Dockerfile
+    depends_on:
+      kafka-init:
+        condition: service_completed_successfully
+    environment:
+      KAFKA_BROKER: ${KAFKA_BROKER}
+      MONGO_URI: ${MONGO_URI}
+
+  sentiment-service:
+    build:
+      context: ./sentiment-service
+      dockerfile: Dockerfile
+    expose:
+      - "50051"
+```
+
+### Service 1: Extractor Service
+
+![Extractor service diagram flow](/writings/mock_streamprocess_3.png "Extractor service diagram flow")
+
+Reads a csv file that contains **$BBCA** tweets in Indonesian, saved in `data/bbca_tweets.csv` (36 rows). One row at a time, it emits each as a JSON `RawTweet` onto `tweets.raw`, and sleeps a second between each row. On EOF (_End of File_) it loops the life cycle like an unbounded stream.
+
+> **Why does it loop?** It's because the entire point of the mock ingestion is to perform deterministic and reproducible input without any live API dependency or rate limit.
+
+Here's what the code snippet looks like
+
+```go
+for {
+    row, err := r.Read()
+    if err == io.EOF {
+        f.Seek(0, io.SeekStart)
+        r = csv.NewReader(f)
+        r.Read()
+        continue
+    }
+    tweet := RawTweet{ConversationID: row[0], FullText: row[1], /* ... */}
+    w.WriteMessages(ctx, kafka.Message{Key: []byte(tweet.ConversationID), Value: payload})
+    time.Sleep(1 * time.Second)
+}
+```
+
+**Kafka Transport**
+
+Kafka single broker (using `apache/kafka:4.0.0`) with KRaft mode, one node acting as both broker and controller. I also designed a separate mechanism to produce the kafka tweet topics (`tweets.raw`, `tweets.clean`), using a startup-call-only instance, which is `kafka-init`.
+
+**Both topics reflect a different schema**:
+`tweets.raw`
+
+```go
+type RawTweet struct {
+	ConversationID string `json:"conversation_id"`
+	FullText       string `json:"full_text"`
+	AuthorHandle   string `json:"author_handle"`
+	AuthorName     string `json:"author_name"`
+	Likes 	       string `json:"likes"`
+	Replies 	   string `json:"replies"`
+	Retweets 	   string `json:"retweets"`
+	TweetURL 	   string `json:"tweet_url"`
+	PostedAt 	   string `json:"posted_at"`
+	ScrapedAt 	   string `json:"scraped_at"`
+}
+```
+
+`tweets.clean`
+
+```go
+type CleanedTweet struct {
+	ConversationID string `json:"conversation_id"`
+	PostedAt 	   string `json:"posted_at"`
+	FullText       string `json:"full_text"`
+	CleanText string `json:"clean_text"`
+	IsNoise   bool   `json:"is_noise"`
+	SentimentLabel string  `json:"sentiment_label"`
+	SentimentScore float64 `json:"sentiment_score"`
+}
+```
+
+### Service 2: Processor Service
+
+![Processor service diagram flow](/writings/mock_streamprocess_4.png "Processor service diagram flow")
+
+As a consumer group, this service consumes `tweets.raw` and for every message it does a very simple regex-keyword pass to simulate text preprocessing:
+
+- **strips URLs**
+- **strips emojis**
+- **strips and collapses whitespace**
+- **lowercases the text**
+- **flags likely bot or pump group content**
+
+Translated into a Go snippet, it looks like this
+
+```go
+urlRe     = regexp.MustCompile(`https?://\S+|t\.me/\S+`)
+emojiRe   = regexp.MustCompile(`[\x{1F000}-\x{1FAFF}\x{2600}-\x{27BF}]`)
+nonAlnum  = regexp.MustCompile(`[^\p{L}\p{N}\s$]`)
+botSignal = regexp.MustCompile(`(?i)(auto-signal|BUY BUY BUY|pumpgroup|botalert)`)
+```
+
+This stage is **meant to mimic a distributed stream compute job with PySpark**-style text processing that sits on the real architecture. This service sits between raw ingestion and sink, transforming and enriching every record exactly once. Rather than a distributed job, it uses a single instance with a single goroutine.
+
+### Service 3: Sentiment Service
+
+![Sentiment service diagram flow](/writings/mock_streamprocess_5.png "Sentiment service diagram flow")
+
+A small Python gRPC wrapper around VADER (`vaderSentiment` 3.3.2), which is a lexicon and rule based sentiment analyzer that needs no training or GPU. It's small enough that it only needs to expose one RPC, `AnalyzeSentiment(text)`, that returns a label and score for each record.
+
+VADER has its own standard compound score thresholds:
+
+- ≥ 0.05 means `positive`
+- −0.05 … 0.05 means `neutral`
+- ≤ −0.05 means `negative`
+
+In order to perform the gRPC call, I need a `sentiment.proto` contract file that looks like this,
+
+```proto
+syntax = "proto3";
+package sentiment;
+option go_package = "github.com/rayhan889/mock_streamprocess/sentimentpb;sentimentpb";
+
+service SentimentService {
+  rpc AnalyzeSentiment (AnalyzeSentimentRequest) returns (AnalyzeSentimentResponse);
+}
+
+message AnalyzeSentimentRequest {
+  string text = 1;
+}
+
+message AnalyzeSentimentResponse {
+  string label = 1; // vader : positive, negative, neutral
+  double score = 2;
+}
+```
+
+### Service 4: Sink Service
+
+![Sink service diagram flow](/writings/mock_streamprocess_6.png "Sink service diagram flow")
+
+Acts as the very last service that consumes already-processed tweets via the `tweets.clean` topic as a consumer group and upserts each record into MongoDB, using `conversation_id` as its key.
+
+The upsertion syntax looks like this,
+
+```go
+coll.UpdateOne(ctx,
+    bson.M{"conversation_id": t.ConversationID},
+    bson.M{"$set": t},
+    options.UpdateOne().SetUpsert(true),
+)
+```
+
+Stored under the `sentiment_results` collection without any index beyond MongoDB's default `_id`.
+
+## Time to Test It
+
+I tested out this pipeline via the one `compose.yml` shown above, ran the build process on all of those services and made sure each of them was successfully built,
+
+![Orbstack GUI on successfully built services under mock_streamprocess](/writings/mock_streamprocess_7.png "Orbstack GUI, all services built")
+
+Notice how `kafka-init` is the only one that exited — as I said before, it's only used as a topic initializer for both `tweets.raw` and `tweets.clean`.
+
+**Kafka Topics**
+
+I ran Kafka's topic CLI tool, and as you can see, both topics were successfully created,
+
+![Kafka topics listed through the Topic CLI tool](/writings/mock_streamprocess_8.png "Kafka topics CLI output")
+
+**Logs on each service**
+
+Here's a detailed view of each service's data distribution by running `docker logs` on all the existing services,
+
+![Detailed services (extractor, processor, sentiment analyzer and sink) logs](/writings/mock_streamprocess_9.png "Service logs")
+
+**I'll break down how tweet records actually get processed,**
+
+### 1. Extract Test
+
+`sentiment-service` is the first to report that it has successfully connected to the `KAFKA_PORT`, followed by the other services. In this scenario, `extractor-service` directly pulls tweets from the csv one by one until it reaches the end of the tweet list. It keeps looping the process in order to simulate real streaming.
+
+### 2. Pre Process Test
+
+As for `processor-service`, it waits for the extracted tweet to be sent via the `tweets.raw` topic. Each time, it makes a gRPC call to `sentiment-service` — I intentionally put a log `Execute sentiment service through RPC` just for debugging purposes. The RPC responds with a message that contains `label` and `score`, which then gets distributed via the `tweets.clean` topic.
+
+### 3. Sunk Test
+
+Lastly, `sink-service` attempts to connect to Mongo, targeting the `sentiment_results` collection. It then unmarshals `CleanedTweet` before upserting those processed tweets keyed by `conversation_id`.
+
+## How it actually gets stored in MongoDB?
+
+![Upsertion result as documents under Mongo Atlas](/writings/mock_streamprocess_10.png "Mongo Atlas documents")
+
+**In the end…**
+
+## I conclude that
+
+> The point of this mock architecture is to **keep everything simple and minimal, while demonstrating how real stream processing architecture works.**
+
+There are some limitations worth stating, since these are honest gaps between this project and a real stream processing system.
+
+- **No PySpark component exists yet.** The streaming-to-compute stage is a single Go consumer, not a Spark job. This gets simplified since it can run as a single instance instead of distributed, which would be overkill for this project.
+- **Single partition per topic, no indexing.** Both kafka topics run one partition, so there's no consumer group parallelism. Also, the mongo upsert filter on `conversation_id` has no supporting index.
+- **VADER is used rather than a fine-tuned transformer served at scale.** Maybe this one is the most obvious. I used VADER because it's lexicon-based and very easy to use, has zero training cost, and — most importantly — the goal of this project is only to demonstrate how stream processing works, not to represent model accuracy.
+
+### Helpful links
+
+This project is published in [this github repo](https://github.com/rayhan889/mock-streamprocess).
