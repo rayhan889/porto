@@ -193,7 +193,7 @@ nonAlnum  = regexp.MustCompile(`[^\p{L}\p{N}\s$]`)
 botSignal = regexp.MustCompile(`(?i)(auto-signal|BUY BUY BUY|pumpgroup|botalert)`)
 ```
 
-This stage is **meant to mimic a distributed stream compute job with PySpark**-style text processing that sits on the real architecture. This service sits between raw ingestion and sink, transforming and enriching every record exactly once. Rather than a distributed job, it uses a single instance with a single goroutine.
+This stage is **meant to mimic a distributed stream compute job with PySpark** style text processing that sits on the real architecture. This service sits between raw ingestion and sink, transforming and enriching every record exactly once. Rather than a distributed job, it uses a single instance with a single goroutine.
 
 ### Service 3: Sentiment Service
 
@@ -252,7 +252,7 @@ I tested out this pipeline via the one `compose.yml` shown above, ran the build 
 
 ![Orbstack GUI on successfully built services under mock_streamprocess](/writings/mock_streamprocess_7.png "Orbstack GUI, all services built")
 
-Notice how `kafka-init` is the only one that exited — as I said before, it's only used as a topic initializer for both `tweets.raw` and `tweets.clean`.
+Notice how `kafka-init` is the only one that exited. As I said before, it's only used as a topic initializer for both `tweets.raw` and `tweets.clean`.
 
 **Kafka Topics**
 
@@ -274,7 +274,7 @@ Here's a detailed view of each service's data distribution by running `docker lo
 
 ### 2. Pre Process Test
 
-As for `processor-service`, it waits for the extracted tweet to be sent via the `tweets.raw` topic. Each time, it makes a gRPC call to `sentiment-service` — I intentionally put a log `Execute sentiment service through RPC` just for debugging purposes. The RPC responds with a message that contains `label` and `score`, which then gets distributed via the `tweets.clean` topic.
+As for `processor-service`, it waits for the extracted tweet to be sent via the `tweets.raw` topic. Each time, it makes a gRPC call to `sentiment-service`, I intentionally put a log `Execute sentiment service through RPC` just for debugging purposes. The RPC responds with a message that contains `label` and `score`, which then gets distributed via the `tweets.clean` topic.
 
 ### 3. Sunk Test
 
@@ -292,9 +292,9 @@ Lastly, `sink-service` attempts to connect to Mongo, targeting the `sentiment_re
 
 There are some limitations worth stating, since these are honest gaps between this project and a real stream processing system.
 
-- **No PySpark component exists yet.** The streaming-to-compute stage is a single Go consumer, not a Spark job. This gets simplified since it can run as a single instance instead of distributed, which would be overkill for this project.
+- **No PySpark component exists yet.** The streaming to compute stage is a single Go consumer, not a Spark job. This gets simplified since it can run as a single instance instead of distributed, which would be overkill for this project.
 - **Single partition per topic, no indexing.** Both kafka topics run one partition, so there's no consumer group parallelism. Also, the mongo upsert filter on `conversation_id` has no supporting index.
-- **VADER is used rather than a fine-tuned transformer served at scale.** Maybe this one is the most obvious. I used VADER because it's lexicon-based and very easy to use, has zero training cost, and — most importantly — the goal of this project is only to demonstrate how stream processing works, not to represent model accuracy.
+- **VADER is used rather than a fine-tuned transformer served at scale.** Maybe this one is the most obvious. I used VADER because it's lexicon based and very easy to use, has zero training cost, and most importantly the goal of this project is only to demonstrate how stream processing works, not to represent model accuracy.
 
 ### Helpful links
 
