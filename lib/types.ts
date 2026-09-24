@@ -2,6 +2,7 @@ import type { ComponentType, SVGProps } from "react";
 
 export interface ExperienceItem {
   title: string;
+  slug?: string;
   company: string;
   companyUrl?: string;
   location: string;

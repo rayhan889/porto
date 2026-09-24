@@ -16,21 +16,19 @@ export const SelectedWork = () => {
       <div className="flex flex-col space-y-6">
         <div>
           <h2 className="font-bold text-foreground font-mono">
-            Selected Work{" "}
+            Selected Works{" "}
             <span className="text-muted-foreground text-xs font-normal">
               ({selectedWorks.length})
             </span>
           </h2>
         </div>
 
-        {/* Project Grid / List */}
         <div className="space-y-3">
           {selectedWorks.map((work, index) => (
-            <WorkCard key={index} work={work} />
+            <WorkCard key={`selected-work-${index + 1}`} work={work} />
           ))}
         </div>
 
-        {/* Footer Link Button */}
         <div className="w-full flex items-center justify-end">
           <Button
             asChild

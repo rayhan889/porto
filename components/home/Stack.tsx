@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useStacks } from "@/store/selectors";
 
@@ -34,6 +34,7 @@ export const Stack = () => {
 
     return () => {
       if (sectionRef.current) {
+        // eslint-disable-next-line react-hooks/exhaustive-deps
         observer.unobserve(sectionRef.current);
       }
     };
@@ -103,7 +104,7 @@ export const Stack = () => {
                 hover:border-border/50 hover:bg-background/80 hover:shadow-lg hover:shadow-muted/20
                 transition-[transform,opacity,border-color,background-color,box-shadow] duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]
                 cursor-default active:scale-[0.98]
-                min-h-[100px] sm:min-h-[110px] md:min-h-[120px]
+                min-h-25 sm:min-h-27.5 md:min-h-30
                 backdrop-blur-sm transform-gpu
                 group-hover:will-change-transform
                 ${bentoClasses}

@@ -17,8 +17,8 @@ export default function ToolsPage() {
     },
     {
       label: "Editor",
-      title: "Kiro",
-      sub: "Jetbrains IDEs(Intellij, etc)",
+      title: "VsCode",
+      sub: "IntelliJ, Goland",
     },
     {
       label: "Terminal",

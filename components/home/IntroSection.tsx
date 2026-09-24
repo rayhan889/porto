@@ -29,7 +29,7 @@ export default function BioParagraph() {
         >
           State University of Surabaya (UNESA)
         </Link>{" "}
-        and previously working as a backend engineer intern at{" "}
+        and previously writing Golang as a backend engineer at{" "}
         <Link
           href="https://dot.co.id"
           target="_blank"
