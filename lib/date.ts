@@ -1,6 +1,6 @@
-import { format, parseISO, formatDistanceToNow, isValid } from 'date-fns'
+import { format, parseISO, formatDistanceToNow, isValid } from "date-fns";
 
-export type DateFormat = 'full' | 'short' | 'relative'
+export type DateFormat = "full" | "short" | "relative";
 
 /**
  * Format a date string in multiple formats
@@ -10,28 +10,27 @@ export type DateFormat = 'full' | 'short' | 'relative'
  */
 export function formatDate(
   dateString: string,
-  formatType: DateFormat = 'full'
+  formatType: DateFormat = "full",
 ): string {
   try {
-    const date = parseISO(dateString)
-    
-    // Handle invalid dates gracefully
+    const date = parseISO(dateString);
+
     if (!isValid(date)) {
-      return 'Invalid date'
+      return "Invalid date";
     }
-    
+
     switch (formatType) {
-      case 'full':
-        return format(date, 'MMM d, yyyy')
-      case 'short':
-        return format(date, 'MM/dd/yy')
-      case 'relative':
-        return formatDistanceToNow(date, { addSuffix: true })
+      case "full":
+        return format(date, "MMM d, yyyy");
+      case "short":
+        return format(date, "MM/dd/yy");
+      case "relative":
+        return formatDistanceToNow(date, { addSuffix: true });
       default:
-        return format(date, 'MMM d, yyyy')
+        return format(date, "MMM d, yyyy");
     }
   } catch (error) {
-    // Handle any parsing errors gracefully
-    return 'Invalid date'
+    console.error(`Error formatting date: ${error}`);
+    return "Invalid date";
   }
 }
