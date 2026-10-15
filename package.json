@@ -14,7 +14,7 @@
     "velite:dev": "velite dev"
   },
   "dependencies": {
-    "@shikijs/rehype": "^4.2.0",
+    "@shikijs/rehype": "^4.4.3",
     "@tailwindcss/typography": "^0.5.20",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
